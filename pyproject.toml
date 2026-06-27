@@ -1,0 +1,12 @@
+[project]
+name = "cancer-cell-vision"
+version = "0.1.0"
+description = "Educational computer vision portfolio project for microscopic cancer cell image classification."
+readme = "README.md"
+requires-python = ">=3.10"
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
