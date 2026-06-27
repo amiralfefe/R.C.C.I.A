@@ -15,6 +15,52 @@ Lien manuel : https://www.kaggle.com/datasets/andrewmvd/leukemia-classification
 
 Kaggle peut demander un compte et/ou une authentification. Ne commit pas l'archive telechargee, ni les images extraites.
 
+## Authentification Kaggle
+
+Le CLI Kaggle est installe avec les dependances dev :
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
+
+Le token attendu est :
+
+```text
+C:\Users\fayss.DESKTOP-FB6N3MC\.kaggle\kaggle.json
+```
+
+Pour le creer :
+
+1. Va sur https://www.kaggle.com/settings/account.
+2. Dans la section API, clique sur `Create New Token`.
+3. Cree le dossier local si besoin :
+
+```powershell
+New-Item -ItemType Directory -Force -Path C:\Users\fayss.DESKTOP-FB6N3MC\.kaggle
+```
+
+4. Place le fichier `kaggle.json` telecharge dans `C:\Users\fayss.DESKTOP-FB6N3MC\.kaggle\`.
+5. Ne commit jamais ce fichier.
+
+Verification du package installe :
+
+```powershell
+.\.venv\Scripts\python.exe -c "import importlib.metadata as m; print(m.version('kaggle'))"
+```
+
+Verification du CLI apres ajout du token :
+
+```powershell
+.\.venv\Scripts\kaggle.exe --version
+```
+
+Telechargement automatique si le token est present :
+
+```powershell
+New-Item -ItemType Directory -Force -Path C:\VSCODE\datasets\leukemia-classification
+.\.venv\Scripts\kaggle.exe datasets download -d andrewmvd/leukemia-classification -p C:\VSCODE\datasets\leukemia-classification --unzip
+```
+
 ## Structure cible
 
 Avant split, le projet attend :
