@@ -120,6 +120,20 @@ Captures recommandees pour le portfolio :
 
 La checklist detaillee est dans [docs/assets/README.md](docs/assets/README.md).
 
+## Apercu De L'Application Streamlit
+
+Page d'accueil avec checkpoint charge, disclaimer medical et resultats V1 :
+
+![Page Streamlit avec modele charge](docs/assets/streamlit-home.png)
+
+Prediction `leukemia_blast` avec probabilites et visualisation Grad-CAM :
+
+![Prediction leukemia_blast avec Grad-CAM](docs/assets/prediction-leukemia-gradcam.png)
+
+Prediction `normal` avec probabilites par classe :
+
+![Prediction normal avec probabilites](docs/assets/prediction-normal.png)
+
 ## Architecture Du Projet
 
 ```text
