@@ -82,6 +82,10 @@ def validate_output_path(input_dir: Path, output_dir: Path) -> None:
         raise ValueError(f"Refusing to write to a top-level folder: {resolved_output}")
 
 
+def output_has_payload(output_dir: Path) -> bool:
+    return any(path.name != ".gitkeep" for path in output_dir.iterdir())
+
+
 def main() -> None:
     args = parse_args()
 
@@ -92,7 +96,7 @@ def main() -> None:
 
     if args.output_dir.exists() and args.overwrite:
         shutil.rmtree(args.output_dir)
-    elif args.output_dir.exists() and any(args.output_dir.iterdir()):
+    elif args.output_dir.exists() and output_has_payload(args.output_dir):
         raise FileExistsError(
             f"Output folder already exists and is not empty: {args.output_dir}. "
             "Use --overwrite to recreate it."
