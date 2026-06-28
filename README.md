@@ -16,12 +16,15 @@ Construire une premiere pipeline complete :
 
 ## Etat actuel
 
-Le projet est pret pour une premiere baseline reelle :
+La V1 reelle est validee sur le dataset public Kaggle **Leukemia Classification** :
 
-- pipeline end-to-end valide avec un mini dataset synthetique ;
-- commandes CLI disponibles pour split, train, evaluate et predict ;
-- interface Streamlit robuste quand le modele ou l'image manque ;
-- workflow dataset reel documente dans [docs/REAL_DATASET_V1.md](docs/REAL_DATASET_V1.md).
+- dataset telecharge et prepare localement ;
+- split `train` / `val` / `test` realise ;
+- entrainement CPU 5 epochs termine ;
+- evaluation test terminee avec accuracy, precision, recall, F1-score et matrice de confusion ;
+- prediction CLI testee sur une image du test set ;
+- checkpoint local cree dans `outputs/best_model.pt` ;
+- demo Streamlit disponible, test manuel complet encore a finaliser.
 
 ## Dataset conseille
 
@@ -128,24 +131,120 @@ Pour presenter le projet, ne mets pas seulement l'accuracy en avant. Regarde aus
 
 L'app permet de charger une image, d'obtenir une prediction et d'afficher une carte Grad-CAM.
 
-## Resultats V1
+## Resultats experimentaux V1
 
-Les resultats reels ne sont pas encore renseignes tant que le dataset public n'a pas ete telecharge et entraine localement.
+Dataset utilise : **andrewmvd/leukemia-classification**.
 
-Apres la premiere baseline, documenter :
+Images preparees :
 
-- dataset utilise ;
-- nombre d'images par classe et par split ;
-- accuracy, precision, recall, F1-score ;
-- matrice de confusion ;
-- limites observees.
+| Classe | Images |
+| --- | ---: |
+| `normal` | 3389 |
+| `leukemia_blast` | 7272 |
 
-## Roadmap
+Split utilise :
 
-- V1 : classification binaire sur cellules de leucemie ou tissu benin/malin.
-- V2 : comparaison de plusieurs architectures, gestion du desequilibre de classes et augmentation avancee.
-- V3 : segmentation de noyaux cellulaires avec annotations pixel-level.
+| Classe | Train | Val | Test |
+| --- | ---: | ---: | ---: |
+| `normal` | 2372 | 508 | 509 |
+| `leukemia_blast` | 5090 | 1090 | 1092 |
+
+Baseline :
+
+- modele : transfer learning ResNet18 ;
+- entrainement : CPU, 5 epochs, batch size 16 ;
+- meilleure validation accuracy : `0.9168` ;
+- test accuracy : `0.9169`.
+
+Rapport de classification sur le test set :
+
+| Classe | Precision | Recall | F1-score | Support |
+| --- | ---: | ---: | ---: | ---: |
+| `leukemia_blast` | 0.9419 | 0.9359 | 0.9389 | 1092 |
+| `normal` | 0.8643 | 0.8762 | 0.8702 | 509 |
+| `macro avg` | 0.9031 | 0.9061 | 0.9046 | 1601 |
+| `weighted avg` | 0.9173 | 0.9169 | 0.9171 | 1601 |
+
+Matrice de confusion test :
+
+| Vraie classe / prediction | `leukemia_blast` | `normal` |
+| --- | ---: | ---: |
+| `leukemia_blast` | 1022 | 70 |
+| `normal` | 63 | 446 |
+
+La matrice de confusion image est generee localement dans `outputs/eval/test_confusion_matrix.png`.
+Le dossier `outputs/` est volontairement ignore par Git.
+
+Exemple de prediction CLI validee :
+
+- image : `data/processed/test/leukemia_blast/leukemia_blast_000004.bmp` ;
+- prediction : `leukemia_blast` ;
+- confiance : `0.7151`.
+
+Ces resultats sont experimentaux et servent a presenter une pipeline IA/data reproductible. Ils ne constituent pas une preuve de performance clinique.
+
+## Comment reproduire l'experience
+
+Configurer l'acces Kaggle localement hors du depot, puis telecharger le dataset :
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install kaggle
+New-Item -ItemType Directory -Force C:\VSCODE\datasets\leukemia-classification
+.\.venv\Scripts\kaggle.exe datasets download -d andrewmvd/leukemia-classification -p C:\VSCODE\datasets\leukemia-classification --unzip
+```
+
+Preparer les dossiers `data/raw/normal` et `data/raw/leukemia_blast` :
+
+```powershell
+.\.venv\Scripts\python.exe scripts\prepare_leukemia_dataset.py --source C:\VSCODE\datasets\leukemia-classification\C-NMC_Leukemia\training_data --output data\raw --overwrite
+```
+
+Creer les splits :
+
+```powershell
+.\.venv\Scripts\python.exe scripts\split_image_folder.py --input data\raw --output data\processed --val-ratio 0.15 --test-ratio 0.15 --overwrite
+```
+
+Entrainer la baseline :
+
+```powershell
+.\.venv\Scripts\python.exe -m cancer_cell_vision.train --data-dir data\processed --epochs 5 --batch-size 16 --output-dir outputs
+```
+
+Evaluer le checkpoint :
+
+```powershell
+.\.venv\Scripts\python.exe -m cancer_cell_vision.evaluate --data-dir data\processed --checkpoint outputs\best_model.pt --output-dir outputs\eval
+```
+
+Tester une prediction CLI :
+
+```powershell
+.\.venv\Scripts\python.exe -m cancer_cell_vision.predict --checkpoint outputs\best_model.pt --image data\processed\test\leukemia_blast\leukemia_blast_000004.bmp --pretty
+```
+
+Lancer la demo Streamlit :
+
+```powershell
+.\.venv\Scripts\streamlit.exe run app.py
+```
 
 ## Limites
 
-Ce projet depend fortement du dataset, de sa qualite, de son equilibre et du protocole de validation. Les scores ne representent pas une performance clinique et ne doivent pas etre interpretes comme une validation medicale.
+Ce projet depend fortement du dataset, de sa qualite, de son equilibre et du protocole de validation.
+
+- Le dataset est public et ne remplace pas une validation medicale.
+- Les classes sont desequilibrees : `leukemia_blast` contient plus d'images que `normal`.
+- La baseline a ete entrainee seulement 5 epochs sur CPU.
+- Les scores dependent du split local et du preprocessing.
+- Aucune validation clinique, multi-centrique ou par specialistes n'est realisee dans ce projet portfolio.
+- Le modele ne doit pas etre utilise pour diagnostiquer, traiter ou orienter une decision medicale.
+
+## Next steps
+
+- Finaliser le test manuel Streamlit avec le checkpoint reel.
+- Ameliorer la presentation Grad-CAM dans l'app.
+- Ajouter de l'augmentation de donnees controlee.
+- Comparer ResNet18, EfficientNet et un CNN plus leger.
+- Tester une strategie de ponderation des classes ou de sampling.
+- Ajouter une page portfolio avec captures, resultats et architecture.
