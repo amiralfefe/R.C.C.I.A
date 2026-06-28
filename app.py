@@ -17,6 +17,28 @@ from cancer_cell_vision.model import load_checkpoint, predict_image
 from cancer_cell_vision.utils import get_device
 
 
+DEFAULT_CHECKPOINT = "outputs/best_model.pt"
+
+V1_CLASS_RESULTS = pd.DataFrame(
+    [
+        {
+            "classe": "leukemia_blast",
+            "precision": 0.9419,
+            "recall": 0.9359,
+            "f1": 0.9389,
+        },
+        {
+            "classe": "normal",
+            "precision": 0.8643,
+            "recall": 0.8762,
+            "f1": 0.8702,
+        },
+    ]
+)
+
+V1_ACCURACY = 0.9169
+
+
 st.set_page_config(page_title="Cancer Cell Vision", layout="wide")
 
 
@@ -27,47 +49,103 @@ def load_model(checkpoint_path: str):
     return model, checkpoint, device
 
 
-st.title("Cancer Cell Vision")
-st.caption("Demonstrateur IA educatif. Non destine au diagnostic medical.")
+def format_percent(value: float) -> str:
+    return f"{value:.2%}"
 
-checkpoint_path = st.sidebar.text_input("Modele", value="outputs/best_model.pt")
-show_gradcam = st.sidebar.toggle("Grad-CAM", value=True)
+
+st.title("Cancer Cell Vision")
+st.caption("Demo portfolio IA/data pour classifier des images microscopiques.")
+st.warning(
+    "Demonstrateur educatif uniquement. Cette application n'est pas un outil medical, "
+    "ne fournit pas de diagnostic et ne doit pas orienter une decision de sante."
+)
+
+checkpoint_path = st.sidebar.text_input("Checkpoint", value=DEFAULT_CHECKPOINT)
+show_gradcam = st.sidebar.toggle("Afficher Grad-CAM", value=True)
 checkpoint = Path(checkpoint_path)
 
-if not checkpoint.exists():
-    st.sidebar.warning("Aucun modele entraine trouve.")
+model = None
+checkpoint_data = None
+device = None
+class_names: list[str] = []
+image_size = 224
+model_error = None
 
-left, right = st.columns([0.48, 0.52], gap="large")
+if checkpoint.exists():
+    try:
+        model, checkpoint_data, device = load_model(checkpoint_path)
+        class_names = list(checkpoint_data["class_names"])
+        image_size = int(checkpoint_data.get("image_size", 224))
+    except Exception as exc:  # pragma: no cover - visible Streamlit state.
+        model_error = exc
+
+st.sidebar.subheader("Etat du modele")
+if not checkpoint.exists():
+    st.sidebar.error("Checkpoint absent")
+    st.sidebar.caption(
+        "Chemin attendu par defaut : `outputs/best_model.pt`. "
+        "Lance l'entrainement avant la demo."
+    )
+elif model_error is not None:
+    st.sidebar.error("Checkpoint trouve mais impossible a charger")
+    st.sidebar.caption(str(model_error))
+else:
+    st.sidebar.success("Modele charge")
+    st.sidebar.caption(f"Device : `{device}`")
+    st.sidebar.caption(f"Classes : `{', '.join(class_names)}`")
+
+st.sidebar.divider()
+st.sidebar.subheader("Resultats V1")
+st.sidebar.metric("Accuracy test", format_percent(V1_ACCURACY))
+st.sidebar.dataframe(
+    V1_CLASS_RESULTS,
+    hide_index=True,
+    use_container_width=True,
+)
+
+st.sidebar.divider()
+st.sidebar.subheader("Limites")
+st.sidebar.markdown(
+    """
+- Demonstrateur educatif.
+- Pas un diagnostic medical.
+- Dataset public Kaggle.
+- Baseline courte entrainee sur CPU.
+"""
+)
+
+left, right = st.columns([0.46, 0.54], gap="large")
 
 image = None
 with left:
+    st.subheader("Image")
     uploaded_file = st.file_uploader("Image microscopique", type=["png", "jpg", "jpeg", "bmp"])
     if uploaded_file is not None:
         try:
             image = Image.open(uploaded_file).convert("RGB")
             st.image(image, use_container_width=True)
         except (UnidentifiedImageError, OSError):
-            st.error("Image invalide ou illisible. Essaie un fichier PNG, JPG, JPEG ou BMP.")
+            st.error(
+                "Image invalide ou illisible. Utilise un fichier PNG, JPG, JPEG ou BMP "
+                "exporte correctement."
+            )
+    else:
+        st.info("Charge une image du test set ou une image microscopique compatible.")
 
 with right:
+    st.subheader("Prediction")
     if not checkpoint.exists():
-        st.warning(
-            "L'app est prete, mais aucun checkpoint n'est disponible. "
-            "Entraine d'abord un modele avec python -m cancer_cell_vision.train."
+        st.error(
+            "Checkpoint absent : impossible de lancer la prediction. "
+            "Entraine d'abord le modele ou indique un autre chemin de checkpoint."
         )
+    elif model_error is not None:
+        st.error(f"Checkpoint impossible a charger : {model_error}")
     elif uploaded_file is None:
         st.info("Ajoute une image pour lancer une prediction.")
     elif image is None:
         st.info("Charge une image valide pour lancer la prediction.")
     else:
-        try:
-            model, checkpoint_data, device = load_model(checkpoint_path)
-            class_names = checkpoint_data["class_names"]
-            image_size = int(checkpoint_data.get("image_size", 224))
-        except Exception as exc:
-            st.error(f"Impossible de charger le modele : {exc}")
-            st.stop()
-
         try:
             result = predict_image(
                 image=image,
@@ -82,17 +160,27 @@ with right:
 
         metric_left, metric_right = st.columns(2)
         metric_left.metric("Classe predite", result["class_name"])
-        metric_right.metric("Confiance", f"{result['confidence']:.1%}")
+        metric_right.metric("Confiance", format_percent(result["confidence"]))
 
         probabilities = pd.DataFrame(
             {
                 "classe": class_names,
                 "probabilite": result["probabilities"],
             }
-        ).set_index("classe")
-        st.bar_chart(probabilities)
+        )
+        probabilities["probabilite_pct"] = probabilities["probabilite"].map(format_percent)
+
+        st.markdown("**Probabilites par classe**")
+        st.dataframe(
+            probabilities[["classe", "probabilite_pct"]],
+            hide_index=True,
+            use_container_width=True,
+        )
+        st.bar_chart(probabilities.set_index("classe")["probabilite"])
 
         if show_gradcam:
+            st.markdown("**Grad-CAM**")
+            gradcam = None
             try:
                 tensor = image_to_tensor(image, image_size=image_size, device=device)
                 gradcam = GradCAM(model, get_resnet_target_layer(model))
@@ -100,13 +188,30 @@ with right:
                 overlay = overlay_cam(denormalize_image(tensor), cam)
                 st.image(overlay, caption="Grad-CAM", use_container_width=True)
             except Exception as exc:
-                st.warning(f"Grad-CAM indisponible pour cette prediction : {exc}")
+                st.warning(
+                    "Grad-CAM indisponible pour cette prediction. "
+                    f"Cause technique : {exc}"
+                )
             finally:
-                if "gradcam" in locals():
+                if gradcam is not None:
                     gradcam.remove_hooks()
+        else:
+            st.info("Grad-CAM desactive dans la sidebar.")
 
-with st.expander("Limites"):
+st.divider()
+st.subheader("Resultats experimentaux V1")
+
+summary_left, summary_right = st.columns([0.35, 0.65], gap="large")
+summary_left.metric("Accuracy test", format_percent(V1_ACCURACY))
+summary_right.dataframe(
+    V1_CLASS_RESULTS,
+    hide_index=True,
+    use_container_width=True,
+)
+
+with st.expander("Limites du demonstrateur"):
     st.write(
-        "Les resultats dependent du dataset, du protocole d'entrainement et de validation. "
-        "Cette application n'est pas un dispositif medical."
+        "Les resultats dependent du dataset public, du split local, du preprocessing et "
+        "du protocole d'entrainement. La baseline a ete entrainee 5 epochs sur CPU. "
+        "Aucune validation clinique n'est realisee dans ce projet portfolio."
     )

@@ -24,7 +24,7 @@ La V1 reelle est validee sur le dataset public Kaggle **Leukemia Classification*
 - evaluation test terminee avec accuracy, precision, recall, F1-score et matrice de confusion ;
 - prediction CLI testee sur une image du test set ;
 - checkpoint local cree dans `outputs/best_model.pt` ;
-- demo Streamlit disponible, test manuel complet encore a finaliser.
+- demo Streamlit testee localement avec le checkpoint reel.
 
 ## Dataset conseille
 
@@ -242,7 +242,7 @@ Ce projet depend fortement du dataset, de sa qualite, de son equilibre et du pro
 
 ## Next steps
 
-- Finaliser le test manuel Streamlit avec le checkpoint reel.
+- Ajouter des captures d'ecran de la demo Streamlit au portfolio.
 - Ameliorer la presentation Grad-CAM dans l'app.
 - Ajouter de l'augmentation de donnees controlee.
 - Comparer ResNet18, EfficientNet et un CNN plus leger.
