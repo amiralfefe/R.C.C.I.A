@@ -9,7 +9,7 @@ from PIL import Image, UnidentifiedImageError
 from cancer_cell_vision.gradcam import (
     GradCAM,
     denormalize_image,
-    get_resnet_target_layer,
+    get_gradcam_target_layer,
     image_to_tensor,
     overlay_cam,
 )
@@ -183,7 +183,7 @@ with right:
             gradcam = None
             try:
                 tensor = image_to_tensor(image, image_size=image_size, device=device)
-                gradcam = GradCAM(model, get_resnet_target_layer(model))
+                gradcam = GradCAM(model, get_gradcam_target_layer(model))
                 cam, _ = gradcam.generate(tensor)
                 overlay = overlay_cam(denormalize_image(tensor), cam)
                 st.image(overlay, caption="Grad-CAM", use_container_width=True)

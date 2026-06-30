@@ -149,6 +149,7 @@ Prediction `normal` avec probabilites par classe :
 |   `-- utils.py
 |-- scripts/
 |   |-- prepare_leukemia_dataset.py
+|   |-- run_model_comparison.py
 |   |-- setup_windows.bat
 |   `-- split_image_folder.py
 |-- docs/
@@ -156,7 +157,8 @@ Prediction `normal` avec probabilites par classe :
 |   |   `-- README.md
 |   |-- DATASET_GUIDE.md
 |   |-- REAL_DATASET_V1.md
-|   `-- SETUP_WINDOWS.md
+|   |-- SETUP_WINDOWS.md
+|   `-- V2_MODEL_COMPARISON.md
 |-- tests/
 `-- requirements.txt
 ```
@@ -221,6 +223,37 @@ Lancer Streamlit :
 .\.venv\Scripts\streamlit.exe run app.py
 ```
 
+## V2 - Comparaison De Modeles
+
+La V2 ajoute un workflow de comparaison pour entrainer et evaluer plusieurs architectures sur les memes splits :
+
+- `resnet18`
+- `efficientnet_b0`
+- `mobilenet_v3_small`
+
+Commande complete :
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --epochs 5 --batch-size 16 --output-dir outputs\model_comparison
+```
+
+Le workflow genere :
+
+- `outputs/model_comparison/summary.csv`
+- `outputs/model_comparison/summary.json`
+- un sous-dossier par modele avec checkpoint, courbes train/val, matrice de confusion et classification report.
+
+Les outputs restent ignores par Git et ne sont pas versionnes.
+
+Un smoke run local a valide le workflow sur deux modeles (`resnet18`, `mobilenet_v3_small`) avec 1 epoch, image size 64 et `--no-pretrained`. Ces scores servent uniquement a verifier l'orchestration V2 ; ils ne remplacent pas une comparaison complete avec poids pre-entraines.
+
+| Modele | Accuracy smoke | F1 normal | F1 leukemia_blast |
+| --- | ---: | ---: | ---: |
+| `resnet18` | 0.8164 | 0.6811 | 0.8711 |
+| `mobilenet_v3_small` | 0.6821 | 0.0000 | 0.8110 |
+
+Documentation detaillee : [docs/V2_MODEL_COMPARISON.md](docs/V2_MODEL_COMPARISON.md).
+
 ## Limites
 
 - Demonstrateur educatif, pas outil medical.
@@ -233,10 +266,9 @@ Lancer Streamlit :
 
 ## Prochaines Ameliorations
 
-- Ajouter les captures finales dans `docs/assets/` et les afficher dans ce README.
 - Ameliorer la presentation Grad-CAM dans Streamlit.
 - Ajouter de l'augmentation de donnees controlee.
-- Comparer ResNet18, EfficientNet et un CNN plus leger.
+- Lancer une comparaison V2 complete avec poids pre-entraines pour tous les modeles.
 - Tester une ponderation des classes ou un sampler dedie.
 - Exporter une petite fiche portfolio avec contexte, resultats et limites.
-- Creer une release `v1.0-baseline` quand les captures seront integrees.
+- Creer une release `v1.0-baseline` ou `v2.0-comparison` selon le prochain jalon retenu.

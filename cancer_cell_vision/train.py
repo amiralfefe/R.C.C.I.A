@@ -13,7 +13,8 @@ from tqdm import tqdm
 
 from cancer_cell_vision.config import TrainConfig
 from cancer_cell_vision.data import build_dataloaders, class_counts
-from cancer_cell_vision.model import create_model, save_checkpoint
+from cancer_cell_vision.metrics import save_training_curves
+from cancer_cell_vision.model import SUPPORTED_MODEL_NAMES, create_model, save_checkpoint
 from cancer_cell_vision.utils import ensure_dir, get_device, save_json, set_seed
 
 
@@ -22,6 +23,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, default=Path("outputs"))
     parser.add_argument("--report-dir", type=Path, default=None)
+    parser.add_argument("--model", choices=SUPPORTED_MODEL_NAMES, default="resnet18")
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--image-size", type=int, default=224)
@@ -89,6 +91,7 @@ def main() -> None:
         data_dir=args.data_dir,
         output_dir=args.output_dir,
         report_dir=args.report_dir or args.output_dir / "train",
+        model_name=args.model,
         epochs=args.epochs,
         batch_size=args.batch_size,
         image_size=args.image_size,
@@ -172,6 +175,7 @@ def main() -> None:
             )
 
     save_json({"history": history}, config.report_dir / "training_history.json")
+    save_training_curves(history, config.report_dir)
     print(f"Best validation accuracy: {best_val_accuracy:.4f}")
 
 

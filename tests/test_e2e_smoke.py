@@ -102,6 +102,9 @@ def test_first_end_to_end_run_with_synthetic_dataset(tmp_path: Path) -> None:
     checkpoint_path = output_dir / "best_model.pt"
     assert checkpoint_path.exists()
     assert (output_dir / "train" / "training_history.json").exists()
+    assert (output_dir / "train" / "training_history.csv").exists()
+    assert (output_dir / "train" / "training_loss.png").exists()
+    assert (output_dir / "train" / "training_accuracy.png").exists()
 
     run_command(
         [
@@ -123,6 +126,7 @@ def test_first_end_to_end_run_with_synthetic_dataset(tmp_path: Path) -> None:
     )
 
     assert (eval_dir / "test_classification_report.json").exists()
+    assert (eval_dir / "test_classification_report.csv").exists()
     assert (eval_dir / "test_confusion_matrix.png").exists()
 
     image_path = next((processed_dir / "test").glob("*/*.png"))

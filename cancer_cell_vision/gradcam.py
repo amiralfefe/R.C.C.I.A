@@ -71,10 +71,18 @@ class GradCAM:
         return cam, target_index
 
 
+def get_gradcam_target_layer(model: nn.Module) -> nn.Module:
+    if hasattr(model, "layer4"):
+        return model.layer4[-1].conv2
+
+    if hasattr(model, "features") and isinstance(model.features, nn.Sequential):
+        return model.features[-1]
+
+    raise ValueError("Grad-CAM expects a CNN model with a ResNet layer4 or features block.")
+
+
 def get_resnet_target_layer(model: nn.Module) -> nn.Module:
-    if not hasattr(model, "layer4"):
-        raise ValueError("Grad-CAM V1 expects a ResNet-like model with layer4.")
-    return model.layer4[-1].conv2
+    return get_gradcam_target_layer(model)
 
 
 def image_to_tensor(image: Image.Image, image_size: int, device: torch.device) -> torch.Tensor:

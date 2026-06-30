@@ -12,19 +12,38 @@ from torchvision import models
 from cancer_cell_vision.data import build_image_transform
 
 
+SUPPORTED_MODEL_NAMES = ("resnet18", "efficientnet_b0", "mobilenet_v3_small")
+
+
 def create_model(
     num_classes: int,
     model_name: str = "resnet18",
     pretrained: bool = True,
 ) -> nn.Module:
-    if model_name != "resnet18":
-        raise ValueError(f"Unsupported model '{model_name}'. V1 currently supports resnet18.")
+    if model_name == "resnet18":
+        weights = models.ResNet18_Weights.DEFAULT if pretrained else None
+        model = models.resnet18(weights=weights)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, num_classes)
+        return model
 
-    weights = models.ResNet18_Weights.DEFAULT if pretrained else None
-    model = models.resnet18(weights=weights)
-    in_features = model.fc.in_features
-    model.fc = nn.Linear(in_features, num_classes)
-    return model
+    if model_name == "efficientnet_b0":
+        weights = models.EfficientNet_B0_Weights.DEFAULT if pretrained else None
+        model = models.efficientnet_b0(weights=weights)
+        in_features = model.classifier[1].in_features
+        model.classifier[1] = nn.Linear(in_features, num_classes)
+        return model
+
+    if model_name == "mobilenet_v3_small":
+        weights = models.MobileNet_V3_Small_Weights.DEFAULT if pretrained else None
+        model = models.mobilenet_v3_small(weights=weights)
+        in_features = model.classifier[3].in_features
+        model.classifier[3] = nn.Linear(in_features, num_classes)
+        return model
+
+    raise ValueError(
+        f"Unsupported model '{model_name}'. Supported models: {', '.join(SUPPORTED_MODEL_NAMES)}."
+    )
 
 
 def save_checkpoint(

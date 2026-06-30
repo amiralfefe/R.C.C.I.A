@@ -10,7 +10,11 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from cancer_cell_vision.data import build_dataset
-from cancer_cell_vision.metrics import build_classification_report, save_confusion_matrix
+from cancer_cell_vision.metrics import (
+    build_classification_report,
+    save_classification_report_csv,
+    save_confusion_matrix,
+)
 from cancer_cell_vision.model import load_checkpoint
 from cancer_cell_vision.utils import ensure_dir, get_device, save_json
 
@@ -72,6 +76,7 @@ def main() -> None:
 
     report = build_classification_report(y_true, y_pred, class_names)
     save_json(report, output_dir / "test_classification_report.json")
+    save_classification_report_csv(report, output_dir / "test_classification_report.csv")
     save_confusion_matrix(
         y_true=y_true,
         y_pred=y_pred,
