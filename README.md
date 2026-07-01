@@ -252,6 +252,41 @@ Un smoke run local a valide le workflow sur deux modeles (`resnet18`, `mobilenet
 | `resnet18` | 0.8164 | 0.6811 | 0.8711 |
 | `mobilenet_v3_small` | 0.6821 | 0.0000 | 0.8110 |
 
+## V2.1 - Benchmark Reel
+
+La V2.1 lance une comparaison plus credible avec poids ImageNet pre-entraines, meme split `data/processed`, 3 epochs, batch size 16 et images 224x224.
+
+Commandes lancees :
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --models resnet18 mobilenet_v3_small --epochs 3 --batch-size 16 --image-size 224 --output-dir outputs\model_comparison_real
+.\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --models efficientnet_b0 --epochs 3 --batch-size 16 --image-size 224 --output-dir outputs\model_comparison_real_efficientnet
+```
+
+Resultats test obtenus :
+
+| Modele | Accuracy | F1 normal | F1 leukemia_blast | Recall normal | Recall leukemia_blast | Train time |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `resnet18` | 0.8988 | 0.8251 | 0.9288 | 0.7505 | 0.9679 | 586.95 s |
+| `mobilenet_v3_small` | 0.8976 | 0.8295 | 0.9268 | 0.7839 | 0.9505 | 277.76 s |
+| `efficientnet_b0` | 0.8863 | 0.8080 | 0.9193 | 0.7525 | 0.9487 | 890.49 s |
+
+Lecture rapide :
+
+- `resnet18` obtient la meilleure accuracy et le meilleur recall `leukemia_blast` sur ce protocole court.
+- `mobilenet_v3_small` est presque au meme niveau, avec le meilleur F1 `normal` et un temps d'entrainement beaucoup plus court.
+- `efficientnet_b0` est le plus lent dans ce run CPU et ne depasse pas les deux autres modeles.
+
+Ces resultats V2.1 sont comparables entre eux car ils partagent le meme protocole. Ils ne remplacent pas la baseline V1, qui avait ete entrainee 5 epochs, et ne constituent pas une validation medicale.
+
+Fichiers generes localement, non versionnes :
+
+- `outputs/model_comparison_real/summary.csv`
+- `outputs/model_comparison_real/summary.json`
+- `outputs/model_comparison_real_efficientnet/summary.csv`
+- `outputs/model_comparison_real_efficientnet/summary.json`
+- rapports JSON/CSV, matrices de confusion PNG et courbes train/val dans chaque sous-dossier modele.
+
 Documentation detaillee : [docs/V2_MODEL_COMPARISON.md](docs/V2_MODEL_COMPARISON.md).
 
 ## Limites
@@ -268,7 +303,7 @@ Documentation detaillee : [docs/V2_MODEL_COMPARISON.md](docs/V2_MODEL_COMPARISON
 
 - Ameliorer la presentation Grad-CAM dans Streamlit.
 - Ajouter de l'augmentation de donnees controlee.
-- Lancer une comparaison V2 complete avec poids pre-entraines pour tous les modeles.
+- Relancer un benchmark plus long avec 5 a 10 epochs et augmentation de donnees.
 - Tester une ponderation des classes ou un sampler dedie.
 - Exporter une petite fiche portfolio avec contexte, resultats et limites.
 - Creer une release `v1.0-baseline` ou `v2.0-comparison` selon le prochain jalon retenu.

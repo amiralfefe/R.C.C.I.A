@@ -64,6 +64,56 @@ Resultats obtenus :
 
 Important : ce smoke run sert seulement a verifier le workflow de comparaison et la generation des rapports. Il utilise 1 epoch, des images 64x64 et `--no-pretrained`. Il ne remplace pas une comparaison V2 complete avec les trois modeles, image size 224, epochs 5 et poids pre-entraines.
 
+## Benchmark Reel V2.1
+
+La V2.1 a ete lancee avec un protocole plus proche d'une comparaison exploitable tout en restant raisonnable sur CPU :
+
+- poids ImageNet pre-entraines ;
+- 3 epochs ;
+- batch size 16 ;
+- image size 224 ;
+- meme dossier `data/processed` et memes splits `train` / `val` / `test`.
+
+Commandes lancees :
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --models resnet18 mobilenet_v3_small --epochs 3 --batch-size 16 --image-size 224 --output-dir outputs\model_comparison_real
+.\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --models efficientnet_b0 --epochs 3 --batch-size 16 --image-size 224 --output-dir outputs\model_comparison_real_efficientnet
+```
+
+Resultats obtenus sur le test set :
+
+| Modele | Accuracy | Precision normal | Recall normal | F1 normal | Precision leukemia_blast | Recall leukemia_blast | F1 leukemia_blast | Train time |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `resnet18` | 0.8988 | 0.9161 | 0.7505 | 0.8251 | 0.8927 | 0.9679 | 0.9288 | 586.95 s |
+| `mobilenet_v3_small` | 0.8976 | 0.8808 | 0.7839 | 0.8295 | 0.9042 | 0.9505 | 0.9268 | 277.76 s |
+| `efficientnet_b0` | 0.8863 | 0.8724 | 0.7525 | 0.8080 | 0.8916 | 0.9487 | 0.9193 | 890.49 s |
+
+Lecture :
+
+- `resnet18` garde la meilleure accuracy et le meilleur recall `leukemia_blast` sur ce benchmark court.
+- `mobilenet_v3_small` est tres proche en accuracy, obtient le meilleur F1 `normal` et entraine beaucoup plus vite sur CPU.
+- `efficientnet_b0` est le plus lent ici et ne depasse pas les deux autres modeles avec 3 epochs.
+
+La baseline V1 reste separee : elle correspond a un run ResNet18 5 epochs documente dans le README. La V2 smoke test reste separee aussi : elle valide seulement l'orchestration. La V2.1 est le premier benchmark reel comparable entre architectures, mais elle reste experimentale et non medicale.
+
+Fichiers generes :
+
+```text
+outputs/model_comparison_real/
+|-- summary.csv
+|-- summary.json
+|-- resnet18/
+|-- mobilenet_v3_small/
+
+outputs/model_comparison_real_efficientnet/
+|-- summary.csv
+|-- summary.json
+`-- efficientnet_b0/
+```
+
+Chaque sous-dossier modele contient le checkpoint local, les courbes train/val, le rapport de classification JSON/CSV et la matrice de confusion PNG. Ces fichiers restent dans `outputs/` et ne doivent pas etre committes.
+
 ## Fichiers Generes
 
 Le workflow ecrit dans `outputs/`, qui reste ignore par Git :
