@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import torch
 
-from cancer_cell_vision.model import SUPPORTED_MODEL_NAMES, create_model
+from rccia_leukemia.model import SUPPORTED_MODEL_NAMES, create_model
 
 
 def test_supported_models_forward_without_pretrained_weights() -> None:

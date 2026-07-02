@@ -8,8 +8,8 @@ import torch
 from PIL import Image
 from torch import nn
 
-from cancer_cell_vision.config import IMAGENET_MEAN, IMAGENET_STD
-from cancer_cell_vision.data import build_image_transform
+from rccia_leukemia.config import IMAGENET_MEAN, IMAGENET_STD
+from rccia_leukemia.data import build_image_transform
 
 
 class GradCAM:

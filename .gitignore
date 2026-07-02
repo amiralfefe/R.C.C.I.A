@@ -12,6 +12,14 @@ data/processed/*
 !data/processed/.gitkeep
 outputs/*
 !outputs/.gitkeep
+
+projects/*/data/raw/*
+!projects/*/data/raw/.gitkeep
+projects/*/data/processed/*
+!projects/*/data/processed/.gitkeep
+projects/*/outputs/*
+!projects/*/outputs/.gitkeep
+
 models/
 reports/
 

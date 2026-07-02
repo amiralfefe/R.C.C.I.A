@@ -6,16 +6,16 @@ import pandas as pd
 import streamlit as st
 from PIL import Image, UnidentifiedImageError
 
-from cancer_cell_vision.gradcam import (
+from rccia_leukemia.gradcam import (
     GradCAM,
     denormalize_image,
     get_gradcam_target_layer,
     image_to_tensor,
     overlay_cam,
 )
-from cancer_cell_vision.error_analysis import load_error_analysis_artifacts
-from cancer_cell_vision.model import load_checkpoint, predict_image
-from cancer_cell_vision.utils import get_device
+from rccia_leukemia.error_analysis import load_error_analysis_artifacts
+from rccia_leukemia.model import load_checkpoint, predict_image
+from rccia_leukemia.utils import get_device
 
 
 DEFAULT_CHECKPOINT = "outputs/best_model.pt"

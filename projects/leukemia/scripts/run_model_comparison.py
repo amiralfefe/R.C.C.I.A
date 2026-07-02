@@ -14,7 +14,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from cancer_cell_vision.model import SUPPORTED_MODEL_NAMES
+from rccia_leukemia.model import SUPPORTED_MODEL_NAMES
 
 
 def parse_args() -> argparse.Namespace:
@@ -103,7 +103,7 @@ def main() -> None:
         train_command = [
             sys.executable,
             "-m",
-            "cancer_cell_vision.train",
+            "rccia_leukemia.train",
             "--data-dir",
             str(args.data_dir),
             "--output-dir",
@@ -138,7 +138,7 @@ def main() -> None:
             [
                 sys.executable,
                 "-m",
-                "cancer_cell_vision.evaluate",
+                "rccia_leukemia.evaluate",
                 "--data-dir",
                 str(args.data_dir),
                 "--checkpoint",

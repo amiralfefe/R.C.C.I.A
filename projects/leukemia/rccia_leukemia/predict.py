@@ -8,8 +8,8 @@ from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 
-from cancer_cell_vision.model import load_checkpoint, predict_image
-from cancer_cell_vision.utils import get_device
+from rccia_leukemia.model import load_checkpoint, predict_image
+from rccia_leukemia.utils import get_device
 
 
 def parse_args() -> argparse.Namespace:

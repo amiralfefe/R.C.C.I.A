@@ -9,14 +9,14 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from cancer_cell_vision.data import build_dataset
-from cancer_cell_vision.metrics import (
+from rccia_leukemia.data import build_dataset
+from rccia_leukemia.metrics import (
     build_classification_report,
     save_classification_report_csv,
     save_confusion_matrix,
 )
-from cancer_cell_vision.model import load_checkpoint
-from cancer_cell_vision.utils import ensure_dir, get_device, save_json
+from rccia_leukemia.model import load_checkpoint
+from rccia_leukemia.utils import ensure_dir, get_device, save_json
 
 
 def parse_args() -> argparse.Namespace:

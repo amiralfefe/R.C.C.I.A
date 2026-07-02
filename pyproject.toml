@@ -1,7 +1,7 @@
 [project]
-name = "cancer-cell-vision"
+name = "rccia"
 version = "0.1.0"
-description = "Educational computer vision portfolio project for microscopic cancer cell image classification."
+description = "Multi-project educational AI portfolio for cancer image classification experiments."
 readme = "README.md"
 requires-python = ">=3.10"
 
@@ -9,4 +9,5 @@ requires-python = ">=3.10"
 line-length = 100
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["projects/leukemia/tests"]
+pythonpath = ["projects/leukemia"]

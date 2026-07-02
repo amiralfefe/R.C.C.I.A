@@ -9,7 +9,7 @@ from PIL import Image
 from torch import nn
 from torchvision import models
 
-from cancer_cell_vision.data import build_image_transform
+from rccia_leukemia.data import build_image_transform
 
 
 SUPPORTED_MODEL_NAMES = ("resnet18", "efficientnet_b0", "mobilenet_v3_small")
@@ -71,7 +71,7 @@ def load_checkpoint(path: Path, device: torch.device) -> tuple[nn.Module, dict]:
     if not path.exists():
         raise FileNotFoundError(
             f"Checkpoint not found: {path}. Train a model first with "
-            "python -m cancer_cell_vision.train."
+            "python -m rccia_leukemia.train."
         )
 
     checkpoint = torch.load(path, map_location=device)

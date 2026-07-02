@@ -11,11 +11,11 @@ from torch import nn
 from torch.optim import AdamW
 from tqdm import tqdm
 
-from cancer_cell_vision.config import TrainConfig
-from cancer_cell_vision.data import build_dataloaders, class_counts
-from cancer_cell_vision.metrics import save_training_curves
-from cancer_cell_vision.model import SUPPORTED_MODEL_NAMES, create_model, save_checkpoint
-from cancer_cell_vision.utils import ensure_dir, get_device, save_json, set_seed
+from rccia_leukemia.config import TrainConfig
+from rccia_leukemia.data import build_dataloaders, class_counts
+from rccia_leukemia.metrics import save_training_curves
+from rccia_leukemia.model import SUPPORTED_MODEL_NAMES, create_model, save_checkpoint
+from rccia_leukemia.utils import ensure_dir, get_device, save_json, set_seed
 
 
 def parse_args() -> argparse.Namespace:

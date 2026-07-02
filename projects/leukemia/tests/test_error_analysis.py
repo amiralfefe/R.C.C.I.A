@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from cancer_cell_vision.error_analysis import (
+from rccia_leukemia.error_analysis import (
     build_summary,
     load_error_analysis_artifacts,
 )

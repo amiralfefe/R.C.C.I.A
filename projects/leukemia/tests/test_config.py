@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from cancer_cell_vision.config import TrainConfig
+from rccia_leukemia.config import TrainConfig
 
 
 def test_train_config_defaults_are_portfolio_v1_friendly() -> None:

@@ -17,20 +17,20 @@ Elle permet de comparer plusieurs architectures sur le meme dataset prepare dans
 ## Entrainer Un Modele
 
 ```powershell
-.\.venv\Scripts\python.exe -m cancer_cell_vision.train --data-dir data\processed --model resnet18 --epochs 5 --batch-size 16 --output-dir outputs\resnet18
+..\..\.venv\Scripts\python.exe -m rccia_leukemia.train --data-dir data\processed --model resnet18 --epochs 5 --batch-size 16 --output-dir outputs\resnet18
 ```
 
 Autres exemples :
 
 ```powershell
-.\.venv\Scripts\python.exe -m cancer_cell_vision.train --data-dir data\processed --model efficientnet_b0 --epochs 5 --batch-size 16 --output-dir outputs\efficientnet_b0
-.\.venv\Scripts\python.exe -m cancer_cell_vision.train --data-dir data\processed --model mobilenet_v3_small --epochs 5 --batch-size 16 --output-dir outputs\mobilenet_v3_small
+..\..\.venv\Scripts\python.exe -m rccia_leukemia.train --data-dir data\processed --model efficientnet_b0 --epochs 5 --batch-size 16 --output-dir outputs\efficientnet_b0
+..\..\.venv\Scripts\python.exe -m rccia_leukemia.train --data-dir data\processed --model mobilenet_v3_small --epochs 5 --batch-size 16 --output-dir outputs\mobilenet_v3_small
 ```
 
 Par defaut, les modeles utilisent les poids ImageNet si disponibles. Pour un smoke test rapide sans telechargement de poids :
 
 ```powershell
-.\.venv\Scripts\python.exe -m cancer_cell_vision.train --data-dir data\processed --model mobilenet_v3_small --epochs 1 --batch-size 16 --output-dir outputs\mobilenet_smoke --no-pretrained
+..\..\.venv\Scripts\python.exe -m rccia_leukemia.train --data-dir data\processed --model mobilenet_v3_small --epochs 1 --batch-size 16 --output-dir outputs\mobilenet_smoke --no-pretrained
 ```
 
 ## Comparer Plusieurs Modeles
@@ -38,13 +38,13 @@ Par defaut, les modeles utilisent les poids ImageNet si disponibles. Pour un smo
 Commande complete souhaitee :
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --epochs 5 --batch-size 16 --output-dir outputs\model_comparison
+..\..\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --epochs 5 --batch-size 16 --output-dir outputs\model_comparison
 ```
 
 Commande courte CPU possible :
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --epochs 2 --batch-size 16 --output-dir outputs\model_comparison_smoke --no-pretrained
+..\..\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --epochs 2 --batch-size 16 --output-dir outputs\model_comparison_smoke --no-pretrained
 ```
 
 ## Smoke Run Local
@@ -52,7 +52,7 @@ Commande courte CPU possible :
 Un smoke run CPU a ete lance pour valider le workflow sans telechargement de poids ImageNet :
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --models resnet18 mobilenet_v3_small --epochs 1 --batch-size 64 --image-size 64 --output-dir outputs\model_comparison_smoke --no-pretrained
+..\..\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --models resnet18 mobilenet_v3_small --epochs 1 --batch-size 64 --image-size 64 --output-dir outputs\model_comparison_smoke --no-pretrained
 ```
 
 Resultats obtenus :
@@ -77,8 +77,8 @@ La V2.1 a ete lancee avec un protocole plus proche d'une comparaison exploitable
 Commandes lancees :
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --models resnet18 mobilenet_v3_small --epochs 3 --batch-size 16 --image-size 224 --output-dir outputs\model_comparison_real
-.\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --models efficientnet_b0 --epochs 3 --batch-size 16 --image-size 224 --output-dir outputs\model_comparison_real_efficientnet
+..\..\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --models resnet18 mobilenet_v3_small --epochs 3 --batch-size 16 --image-size 224 --output-dir outputs\model_comparison_real
+..\..\.venv\Scripts\python.exe scripts\run_model_comparison.py --data-dir data\processed --models efficientnet_b0 --epochs 3 --batch-size 16 --image-size 224 --output-dir outputs\model_comparison_real_efficientnet
 ```
 
 Resultats obtenus sur le test set :

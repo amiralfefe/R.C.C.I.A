@@ -14,16 +14,16 @@ from PIL import Image, ImageDraw
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from cancer_cell_vision.data import build_dataset
-from cancer_cell_vision.gradcam import (
+from rccia_leukemia.data import build_dataset
+from rccia_leukemia.gradcam import (
     GradCAM,
     denormalize_image,
     get_gradcam_target_layer,
     image_to_tensor,
     overlay_cam,
 )
-from cancer_cell_vision.model import load_checkpoint
-from cancer_cell_vision.utils import ensure_dir, get_device, read_json, save_json
+from rccia_leukemia.model import load_checkpoint
+from rccia_leukemia.utils import ensure_dir, get_device, read_json, save_json
 
 
 PREDICTION_COLUMNS = [

@@ -7,7 +7,7 @@ from pathlib import Path
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-from cancer_cell_vision.config import IMAGENET_MEAN, IMAGENET_STD
+from rccia_leukemia.config import IMAGENET_MEAN, IMAGENET_STD
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
 

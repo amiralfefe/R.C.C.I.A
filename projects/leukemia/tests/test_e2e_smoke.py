@@ -82,7 +82,7 @@ def test_first_end_to_end_run_with_synthetic_dataset(tmp_path: Path) -> None:
         [
             sys.executable,
             "-m",
-            "cancer_cell_vision.train",
+            "rccia_leukemia.train",
             "--data-dir",
             str(processed_dir),
             "--epochs",
@@ -111,7 +111,7 @@ def test_first_end_to_end_run_with_synthetic_dataset(tmp_path: Path) -> None:
         [
             sys.executable,
             "-m",
-            "cancer_cell_vision.evaluate",
+            "rccia_leukemia.evaluate",
             "--data-dir",
             str(processed_dir),
             "--checkpoint",
@@ -135,7 +135,7 @@ def test_first_end_to_end_run_with_synthetic_dataset(tmp_path: Path) -> None:
         [
             sys.executable,
             "-m",
-            "cancer_cell_vision.predict",
+            "rccia_leukemia.predict",
             "--checkpoint",
             str(checkpoint_path),
             "--image",

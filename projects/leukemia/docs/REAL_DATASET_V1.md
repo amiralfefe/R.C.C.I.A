@@ -20,7 +20,7 @@ Kaggle peut demander un compte et/ou une authentification. Ne commit pas l'archi
 Le CLI Kaggle est installe avec les dependances dev :
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+..\..\.venv\Scripts\python.exe -m pip install -r ..\..\requirements-dev.txt
 ```
 
 Le token attendu est :
@@ -45,20 +45,20 @@ New-Item -ItemType Directory -Force -Path C:\Users\fayss.DESKTOP-FB6N3MC\.kaggle
 Verification du package installe :
 
 ```powershell
-.\.venv\Scripts\python.exe -c "import importlib.metadata as m; print(m.version('kaggle'))"
+..\..\.venv\Scripts\python.exe -c "import importlib.metadata as m; print(m.version('kaggle'))"
 ```
 
 Verification du CLI apres ajout du token :
 
 ```powershell
-.\.venv\Scripts\kaggle.exe --version
+..\..\.venv\Scripts\kaggle.exe --version
 ```
 
 Telechargement automatique si le token est present :
 
 ```powershell
 New-Item -ItemType Directory -Force -Path C:\VSCODE\datasets\leukemia-classification
-.\.venv\Scripts\kaggle.exe datasets download -d andrewmvd/leukemia-classification -p C:\VSCODE\datasets\leukemia-classification --unzip
+..\..\.venv\Scripts\kaggle.exe datasets download -d andrewmvd/leukemia-classification -p C:\VSCODE\datasets\leukemia-classification --unzip
 ```
 
 ## Structure cible
@@ -93,37 +93,37 @@ data/
 Si le dataset telecharge contient des dossiers faciles a identifier comme `Normal`, `Leukemia`, `hem`, `all` ou `blast`, lance :
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\prepare_leukemia_dataset.py --source path\to\downloaded_dataset --output data\raw --overwrite
+..\..\.venv\Scripts\python.exe scripts\prepare_leukemia_dataset.py --source path\to\downloaded_dataset --output data\raw --overwrite
 ```
 
 Si la detection automatique ne trouve pas les bons dossiers, indique les chemins explicitement. Les chemins peuvent etre absolus ou relatifs au dossier `--source`.
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\prepare_leukemia_dataset.py --source path\to\downloaded_dataset --normal-dir path\to\normal_folder --blast-dir path\to\blast_folder --output data\raw --overwrite
+..\..\.venv\Scripts\python.exe scripts\prepare_leukemia_dataset.py --source path\to\downloaded_dataset --normal-dir path\to\normal_folder --blast-dir path\to\blast_folder --output data\raw --overwrite
 ```
 
 Pour un premier essai rapide, cree un subset de developpement :
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\prepare_leukemia_dataset.py --source path\to\downloaded_dataset --output data\raw --max-per-class 300 --overwrite
+..\..\.venv\Scripts\python.exe scripts\prepare_leukemia_dataset.py --source path\to\downloaded_dataset --output data\raw --max-per-class 300 --overwrite
 ```
 
 ## Split
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\split_image_folder.py --input data\raw --output data\processed --val-ratio 0.15 --test-ratio 0.15 --overwrite
+..\..\.venv\Scripts\python.exe scripts\split_image_folder.py --input data\raw --output data\processed --val-ratio 0.15 --test-ratio 0.15 --overwrite
 ```
 
 ## Baseline courte
 
 ```powershell
-.\.venv\Scripts\python.exe -m cancer_cell_vision.train --data-dir data\processed --epochs 5 --batch-size 16 --output-dir outputs
+..\..\.venv\Scripts\python.exe -m rccia_leukemia.train --data-dir data\processed --epochs 5 --batch-size 16 --output-dir outputs
 ```
 
 ## Evaluation
 
 ```powershell
-.\.venv\Scripts\python.exe -m cancer_cell_vision.evaluate --data-dir data\processed --checkpoint outputs\best_model.pt --output-dir outputs\eval
+..\..\.venv\Scripts\python.exe -m rccia_leukemia.evaluate --data-dir data\processed --checkpoint outputs\best_model.pt --output-dir outputs\eval
 ```
 
 Les resultats a regarder en priorite :
@@ -138,13 +138,13 @@ L'accuracy seule ne suffit pas a juger le comportement du modele.
 ## Prediction CLI
 
 ```powershell
-.\.venv\Scripts\python.exe -m cancer_cell_vision.predict --checkpoint outputs\best_model.pt --image data\processed\test\normal\example.jpg --pretty
+..\..\.venv\Scripts\python.exe -m rccia_leukemia.predict --checkpoint outputs\best_model.pt --image data\processed\test\normal\example.jpg --pretty
 ```
 
 ## Streamlit
 
 ```powershell
-.\.venv\Scripts\streamlit.exe run app.py
+..\..\.venv\Scripts\streamlit.exe run app.py
 ```
 
 Teste au moins une image `normal` et une image `leukemia_blast`. Grad-CAM peut aider a presenter le projet, mais il reste une visualisation exploratoire, pas une justification medicale.
