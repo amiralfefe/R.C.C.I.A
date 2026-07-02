@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 import subprocess
 import sys
@@ -148,3 +149,52 @@ def test_first_end_to_end_run_with_synthetic_dataset(tmp_path: Path) -> None:
     assert payload["class_name"] in {"normal", "cancer"}
     assert 0 <= payload["confidence"] <= 1
     assert len(payload["probabilities"]) == 2
+
+    analysis_dir = output_dir / "error_analysis"
+    run_command(
+        [
+            sys.executable,
+            "scripts/analyze_errors.py",
+            "--data-dir",
+            str(processed_dir),
+            "--checkpoint",
+            str(checkpoint_path),
+            "--model",
+            "resnet18",
+            "--output-dir",
+            str(analysis_dir),
+            "--max-examples",
+            "4",
+            "--skip-gradcam",
+        ],
+        cwd=repo_root,
+    )
+
+    predictions_path = analysis_dir / "predictions.csv"
+    summary_path = analysis_dir / "summary.json"
+    assert predictions_path.exists()
+    assert summary_path.exists()
+    assert (analysis_dir / "examples").exists()
+
+    with predictions_path.open(newline="", encoding="utf-8") as file:
+        rows = list(csv.DictReader(file))
+
+    assert rows
+    assert {
+        "image_path",
+        "true_label",
+        "predicted_label",
+        "confidence",
+        "prob_normal",
+        "prob_leukemia_blast",
+        "is_correct",
+        "error_type",
+    }.issubset(rows[0])
+
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    assert summary["total_images"] == len(rows)
+    assert summary["correct_count"] + summary["error_count"] == summary["total_images"]
+    assert (
+        summary["false_positive_count"] + summary["false_negative_count"]
+        == summary["error_count"]
+    )

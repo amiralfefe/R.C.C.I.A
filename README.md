@@ -140,7 +140,8 @@ Prediction `normal` avec probabilites par classe :
 .
 |-- app.py
 |-- cancer_cell_vision/
-|   |-- dataset.py
+|   |-- data.py
+|   |-- error_analysis.py
 |   |-- evaluate.py
 |   |-- gradcam.py
 |   |-- model.py
@@ -148,6 +149,7 @@ Prediction `normal` avec probabilites par classe :
 |   |-- train.py
 |   `-- utils.py
 |-- scripts/
+|   |-- analyze_errors.py
 |   |-- prepare_leukemia_dataset.py
 |   |-- run_model_comparison.py
 |   |-- setup_windows.bat
@@ -289,6 +291,47 @@ Fichiers generes localement, non versionnes :
 
 Documentation detaillee : [docs/V2_MODEL_COMPARISON.md](docs/V2_MODEL_COMPARISON.md).
 
+## V2.2 - Error Analysis + Interpretability
+
+La V2.2 ajoute un workflow d'analyse qualitative pour comprendre les bonnes predictions et les erreurs du modele, au-dela de l'accuracy globale.
+
+Commande lancee avec le checkpoint V1 ResNet18 utilise par Streamlit :
+
+```powershell
+.\.venv\Scripts\python.exe scripts\analyze_errors.py --data-dir data\processed --checkpoint outputs\best_model.pt --model resnet18 --output-dir outputs\error_analysis --max-examples 12
+```
+
+Definitions utilisees :
+
+- `false_positive` : image `normal` predite `leukemia_blast`.
+- `false_negative` : image `leukemia_blast` predite `normal`.
+- `correct` : prediction identique au vrai label.
+
+Resultats obtenus sur le test set V1 :
+
+| Indicateur | Valeur |
+| --- | ---: |
+| Images analysees | 1601 |
+| Predictions correctes | 1468 |
+| Erreurs | 133 |
+| False positives | 63 |
+| False negatives | 70 |
+| Accuracy | 0.9169 |
+| Confiance moyenne bonnes predictions | 0.9110 |
+| Confiance moyenne erreurs | 0.7057 |
+
+Fichiers generes localement, non versionnes :
+
+- `outputs/error_analysis/predictions.csv`
+- `outputs/error_analysis/summary.json`
+- `outputs/error_analysis/examples/`
+- exemples annotes pour `false_positive`, `false_negative`, `correct_high_confidence`, `correct_low_confidence`
+- Grad-CAM exporte pour quelques false positives et false negatives
+
+La demo Streamlit affiche maintenant une section `Analyse des erreurs V2.2` si `outputs/error_analysis/summary.json` existe. Si l'analyse n'a pas encore ete generee, l'application affiche un message propre et continue de fonctionner.
+
+Ces exports restent des artefacts locaux pour le portfolio. Ils ne sont pas committes et ne constituent pas une validation medicale.
+
 ## Limites
 
 - Demonstrateur educatif, pas outil medical.
@@ -304,6 +347,7 @@ Documentation detaillee : [docs/V2_MODEL_COMPARISON.md](docs/V2_MODEL_COMPARISON
 - Ameliorer la presentation Grad-CAM dans Streamlit.
 - Ajouter de l'augmentation de donnees controlee.
 - Relancer un benchmark plus long avec 5 a 10 epochs et augmentation de donnees.
+- Ajouter une analyse des seuils de decision et de la calibration des probabilites.
 - Tester une ponderation des classes ou un sampler dedie.
 - Exporter une petite fiche portfolio avec contexte, resultats et limites.
 - Creer une release `v1.0-baseline` ou `v2.0-comparison` selon le prochain jalon retenu.

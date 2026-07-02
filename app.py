@@ -13,11 +13,13 @@ from cancer_cell_vision.gradcam import (
     image_to_tensor,
     overlay_cam,
 )
+from cancer_cell_vision.error_analysis import load_error_analysis_artifacts
 from cancer_cell_vision.model import load_checkpoint, predict_image
 from cancer_cell_vision.utils import get_device
 
 
 DEFAULT_CHECKPOINT = "outputs/best_model.pt"
+DEFAULT_ERROR_ANALYSIS_DIR = Path("outputs/error_analysis")
 
 V1_CLASS_RESULTS = pd.DataFrame(
     [
@@ -51,6 +53,12 @@ def load_model(checkpoint_path: str):
 
 def format_percent(value: float) -> str:
     return f"{value:.2%}"
+
+
+def format_optional_percent(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    return format_percent(float(value))
 
 
 st.title("Cancer Cell Vision")
@@ -215,3 +223,67 @@ with st.expander("Limites du demonstrateur"):
         "du protocole d'entrainement. La baseline a ete entrainee 5 epochs sur CPU. "
         "Aucune validation clinique n'est realisee dans ce projet portfolio."
     )
+
+st.divider()
+st.subheader("Analyse des erreurs V2.2")
+st.caption(
+    "Analyse qualitative locale du test set : bonnes predictions, erreurs, "
+    "false positives, false negatives et exemples exportes."
+)
+
+with st.expander("Definitions", expanded=False):
+    st.write(
+        "False positive : image `normal` predite `leukemia_blast`. "
+        "False negative : image `leukemia_blast` predite `normal`. "
+        "Ces categories servent a analyser le comportement du modele, pas a poser un diagnostic."
+    )
+
+analysis_state = load_error_analysis_artifacts(DEFAULT_ERROR_ANALYSIS_DIR)
+if not analysis_state["available"]:
+    st.info(
+        "Analyse V2.2 non generee localement. Lance "
+        "`.\\.venv\\Scripts\\python.exe scripts\\analyze_errors.py --data-dir data\\processed "
+        "--checkpoint outputs\\best_model.pt --model resnet18 --output-dir outputs\\error_analysis "
+        "--max-examples 12` pour creer les rapports."
+    )
+else:
+    summary = analysis_state["summary"]
+    metric_cols = st.columns(5)
+    metric_cols[0].metric("Images test", int(summary["total_images"]))
+    metric_cols[1].metric("Erreurs", int(summary["error_count"]))
+    metric_cols[2].metric("False positives", int(summary["false_positive_count"]))
+    metric_cols[3].metric("False negatives", int(summary["false_negative_count"]))
+    metric_cols[4].metric("Accuracy", format_percent(float(summary["accuracy"])))
+
+    confidence_frame = pd.DataFrame(
+        [
+            {
+                "groupe": "predictions correctes",
+                "confiance moyenne": format_optional_percent(
+                    summary.get("average_confidence_correct")
+                ),
+            },
+            {
+                "groupe": "erreurs",
+                "confiance moyenne": format_optional_percent(
+                    summary.get("average_confidence_errors")
+                ),
+            },
+        ]
+    )
+    st.dataframe(confidence_frame, hide_index=True, use_container_width=True)
+    st.caption(f"Checkpoint analyse : `{summary.get('checkpoint_path', 'n/a')}`")
+
+    examples = [
+        path
+        for path in analysis_state["examples"]
+        if path.name.endswith("_annotated.png") or path.name.endswith("_gradcam.png")
+    ]
+    if not examples:
+        st.info("Aucun exemple visuel exporte dans `outputs/error_analysis/examples`.")
+    else:
+        st.markdown("**Exemples exportes localement**")
+        columns = st.columns(3)
+        for index, image_path in enumerate(examples[:12]):
+            with columns[index % 3]:
+                st.image(str(image_path), caption=image_path.name, use_container_width=True)
