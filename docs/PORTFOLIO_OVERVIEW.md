@@ -30,11 +30,11 @@ Resultats principaux :
 | V2.1 | benchmark reel de trois architectures |
 | V2.2 | 1601 images test analysees, 133 erreurs, 63 false positives, 70 false negatives |
 
-## Projets Suivants
+## Projets Suivants Et En Cours
 
 | Projet | Statut | Objectif |
 | --- | --- | --- |
-| Lung + Colon | prochain | Nouveau sous-projet histopathologique |
+| Lung + Colon | V1 initialisee | Pipeline LC25000 5 classes, dataset reel a lancer localement |
 | Breast | prevu | Classification benin / malin sur dataset public |
 | Metastasis | prevu | Detection ou classification de patches |
 | MultiCancer | prevu | Synthese portfolio et comparaison transversale |

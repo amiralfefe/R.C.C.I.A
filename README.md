@@ -9,7 +9,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | Projet | Statut | Description |
 | --- | --- | --- |
 | [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
-| [Lung + Colon](projects/lung_colon/README.md) | prochain | Classification histopathologique lung/colon a cadrer proprement |
+| [Lung + Colon](projects/lung_colon/README.md) | V1 initialisee | Classification histopathologique LC25000 en 5 classes, pipeline PyTorch, Streamlit et Grad-CAM |
 | Breast | prevu | Projet futur autour d'un dataset public type tumeurs benignes/malignes |
 | Metastasis | prevu | Projet futur oriente detection/patch classification |
 | MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
@@ -53,7 +53,14 @@ R.C.C.I.A/
     |   |-- data/
     |   `-- outputs/
     `-- lung_colon/
-        `-- README.md
+        |-- README.md
+        |-- app.py
+        |-- rccia_lung_colon/
+        |-- scripts/
+        |-- tests/
+        |-- docs/
+        |-- data/
+        `-- outputs/
 ```
 
 ## Installation Globale
@@ -78,6 +85,13 @@ python -m pip install -r requirements-dev.txt
 
 ```powershell
 cd projects\leukemia
+..\..\.venv\Scripts\streamlit.exe run app.py
+```
+
+## Lancer Le Projet Lung + Colon
+
+```powershell
+cd projects\lung_colon
 ..\..\.venv\Scripts\streamlit.exe run app.py
 ```
 

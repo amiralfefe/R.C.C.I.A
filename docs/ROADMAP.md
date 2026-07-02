@@ -27,17 +27,27 @@ v2.2-error-analysis
 
 ## Phase 2 - Lung + Colon
 
-Statut : prochain.
+Statut : V1 initialisee.
 
-Objectif propose : construire un deuxieme projet histopathologique a partir d'un dataset public lung/colon, avec cadrage portfolio et disclaimer medical.
+Objectif propose : construire un deuxieme projet histopathologique a partir du dataset public LC25000, avec cadrage portfolio et disclaimer medical.
 
-Premieres etapes :
+V1 initialisee :
 
-1. Choisir le dataset public.
-2. Documenter les classes et les limites.
-3. Creer un pipeline minimal separe dans `projects/lung_colon`.
-4. Reutiliser les bonnes pratiques du projet leucemie sans copier aveuglement tout le code.
-5. Ajouter une demo seulement apres une baseline propre.
+- structure `projects/lung_colon` ;
+- package `rccia_lung_colon` ;
+- classification 5 classes ;
+- scripts de preparation LC25000 et split ;
+- entrainement, evaluation, prediction CLI ;
+- demo Streamlit + Grad-CAM ;
+- tests smoke sur dataset synthetique.
+
+Prochaines etapes :
+
+1. Telecharger LC25000 localement.
+2. Preparer `data/raw` avec les cinq classes normalisees.
+3. Creer `data/processed`.
+4. Lancer une baseline ResNet18.
+5. Documenter les resultats reels sans les presenter comme validation medicale.
 
 ## Phase 3 - Breast
 
