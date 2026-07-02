@@ -17,6 +17,26 @@ Cette V1 met en place une pipeline complete de classification d'images :
 
 La demo locale a ete testee avec le checkpoint reel `outputs/best_model.pt`.
 
+## Project Status
+
+Version finale actuelle : `v2.2-error-analysis`.
+
+| Version | Statut | Contenu |
+| --- | --- | --- |
+| V1 | termine | pipeline reel, Streamlit, Grad-CAM, resultats test |
+| V2 | termine | comparaison de modeles et rapports d'evaluation |
+| V2.1 | termine | benchmark reel ResNet18 / MobileNetV3 / EfficientNet |
+| V2.2 | termine | analyse des erreurs, false positives / false negatives |
+| V2.3 | termine | pack de publication portfolio |
+
+Documents utiles :
+
+- [Project summary](docs/PROJECT_SUMMARY.md)
+- [Interview pitch](docs/INTERVIEW_PITCH.md)
+- [LinkedIn draft](docs/LINKEDIN_DRAFT.md)
+- [Model comparison V2](docs/V2_MODEL_COMPARISON.md)
+- [Release notes v2.2](docs/RELEASE_NOTES_V2_2.md)
+
 ## Stack Technique
 
 - Python
@@ -158,7 +178,11 @@ Prediction `normal` avec probabilites par classe :
 |   |-- assets/
 |   |   `-- README.md
 |   |-- DATASET_GUIDE.md
+|   |-- INTERVIEW_PITCH.md
+|   |-- LINKEDIN_DRAFT.md
+|   |-- PROJECT_SUMMARY.md
 |   |-- REAL_DATASET_V1.md
+|   |-- RELEASE_NOTES_V2_2.md
 |   |-- SETUP_WINDOWS.md
 |   `-- V2_MODEL_COMPARISON.md
 |-- tests/
