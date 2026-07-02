@@ -34,10 +34,12 @@ Resultats principaux :
 
 | Projet | Statut | Objectif |
 | --- | --- | --- |
-| Lung + Colon | V1 initialisee | Pipeline LC25000 5 classes, dataset reel a lancer localement |
+| Lung + Colon | V1 reelle | Pipeline LC25000 5 classes, ResNet18, Streamlit, Grad-CAM, accuracy test 0.9965 |
 | Breast | prevu | Classification benin / malin sur dataset public |
 | Metastasis | prevu | Detection ou classification de patches |
 | MultiCancer | prevu | Synthese portfolio et comparaison transversale |
+
+Le sous-projet [Lung + Colon](../projects/lung_colon/README.md) ajoute une deuxieme baseline reelle au monorepo : dataset LC25000 prepare localement, split train/val/test equilibre, entrainement ResNet18 pre-entraine et evaluation multi-classe avec precision, recall, F1-score et matrice de confusion. Les scores eleves restent des resultats experimentaux portfolio, pas une validation medicale.
 
 ## Competences Demontrees
 
