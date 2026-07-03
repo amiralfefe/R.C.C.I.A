@@ -10,7 +10,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | --- | --- | --- |
 | [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
 | [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
-| Breast | prevu | Projet futur autour d'un dataset public type tumeurs benignes/malignes |
+| [Breast](projects/breast/README.md) | V1 initialized | Projet BreakHis benign/malignant avec preparation patient-aware split si metadata exploitable |
 | Metastasis | prevu | Projet futur oriente detection/patch classification |
 | MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
 
@@ -52,10 +52,19 @@ R.C.C.I.A/
     |   |-- docs/
     |   |-- data/
     |   `-- outputs/
-    `-- lung_colon/
+    |-- lung_colon/
+    |   |-- README.md
+    |   |-- app.py
+    |   |-- rccia_lung_colon/
+    |   |-- scripts/
+    |   |-- tests/
+    |   |-- docs/
+    |   |-- data/
+    |   `-- outputs/
+    `-- breast/
         |-- README.md
         |-- app.py
-        |-- rccia_lung_colon/
+        |-- rccia_breast/
         |-- scripts/
         |-- tests/
         |-- docs/
@@ -111,6 +120,15 @@ Pack portfolio Lung + Colon :
 - [Release notes V2.2](projects/lung_colon/docs/RELEASE_NOTES_V2_2.md)
 
 Les donnees, checkpoints, outputs, tokens Kaggle et environnements virtuels ne sont pas versionnes.
+
+## Lancer Le Projet Breast
+
+```powershell
+cd projects\breast
+..\..\.venv\Scripts\streamlit.exe run app.py
+```
+
+V1 initialisation : pipeline BreakHis `benign` vs `malignant`, scripts de preparation, split classique ou patient-aware si `patient_id` est disponible, train/evaluate/predict, Streamlit et tests smoke. Aucun resultat reel BreakHis n'est encore documente.
 
 ## Docs Globales
 

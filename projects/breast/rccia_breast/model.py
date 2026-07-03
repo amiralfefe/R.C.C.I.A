@@ -1,0 +1,106 @@
+"""Model creation and prediction helpers."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import torch
+from PIL import Image
+from torch import nn
+from torchvision import models
+
+from .data import build_image_transform
+
+SUPPORTED_MODEL_NAMES = ("resnet18", "efficientnet_b0", "mobilenet_v3_small")
+
+
+def create_model(
+    num_classes: int,
+    model_name: str = "resnet18",
+    pretrained: bool = True,
+) -> nn.Module:
+    if model_name == "resnet18":
+        weights = models.ResNet18_Weights.DEFAULT if pretrained else None
+        model = models.resnet18(weights=weights)
+        model.fc = nn.Linear(model.fc.in_features, num_classes)
+        return model
+
+    if model_name == "efficientnet_b0":
+        weights = models.EfficientNet_B0_Weights.DEFAULT if pretrained else None
+        model = models.efficientnet_b0(weights=weights)
+        model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
+        return model
+
+    if model_name == "mobilenet_v3_small":
+        weights = models.MobileNet_V3_Small_Weights.DEFAULT if pretrained else None
+        model = models.mobilenet_v3_small(weights=weights)
+        model.classifier[3] = nn.Linear(model.classifier[3].in_features, num_classes)
+        return model
+
+    raise ValueError(
+        f"Unsupported model '{model_name}'. Supported models: {', '.join(SUPPORTED_MODEL_NAMES)}."
+    )
+
+
+def save_checkpoint(
+    path: Path,
+    model: nn.Module,
+    class_names: list[str],
+    image_size: int,
+    model_name: str,
+    metrics: dict[str, float],
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(
+        {
+            "model_state": model.state_dict(),
+            "class_names": class_names,
+            "image_size": image_size,
+            "model_name": model_name,
+            "metrics": metrics,
+        },
+        path,
+    )
+
+
+def load_checkpoint(path: Path, device: torch.device) -> tuple[nn.Module, dict]:
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Checkpoint not found: {path}. Train a model first with "
+            "python -m rccia_breast.train."
+        )
+
+    checkpoint = torch.load(path, map_location=device)
+    required_keys = {"model_state", "class_names", "image_size"}
+    missing_keys = required_keys.difference(checkpoint)
+    if missing_keys:
+        raise ValueError(f"Invalid checkpoint {path}. Missing keys: {sorted(missing_keys)}.")
+
+    class_names = checkpoint["class_names"]
+    model_name = checkpoint.get("model_name", "resnet18")
+    model = create_model(num_classes=len(class_names), model_name=model_name, pretrained=False)
+    model.load_state_dict(checkpoint["model_state"])
+    model.to(device)
+    model.eval()
+    return model, checkpoint
+
+
+@torch.inference_mode()
+def predict_image(
+    image: Image.Image,
+    model: nn.Module,
+    class_names: list[str],
+    image_size: int,
+    device: torch.device,
+) -> dict[str, float | str | list[float]]:
+    transform = build_image_transform(image_size=image_size)
+    tensor = transform(image.convert("RGB")).unsqueeze(0).to(device)
+    logits = model(tensor)
+    probabilities = torch.softmax(logits, dim=1).squeeze(0).detach().cpu()
+    predicted_index = int(probabilities.argmax().item())
+
+    return {
+        "class_name": class_names[predicted_index],
+        "confidence": float(probabilities[predicted_index].item()),
+        "probabilities": [float(value) for value in probabilities],
+    }

@@ -63,13 +63,28 @@ Prochaines etapes :
 
 ## Phase 3 - Breast
 
-Statut : prevu.
+Statut : V1 initialisee, prochain real dataset run.
 
-Objectif possible : classification benin / malin sur un dataset public type histopathologie du cancer du sein.
+Objectif : classification `benign` / `malignant` sur BreakHis / Breast Cancer Histopathological Database.
 
-Points de vigilance :
+V1 initialisee :
+
+- structure `projects/breast` ;
+- package `rccia_breast` ;
+- classification binaire `benign` vs `malignant` ;
+- scripts de preparation BreakHis ;
+- extraction de grossissement `40X`, `100X`, `200X`, `400X` si possible ;
+- extraction de `patient_id` si lisible ;
+- split classique ou patient-aware ;
+- entrainement, evaluation, prediction CLI ;
+- app Streamlit V1 avec message propre sans checkpoint ;
+- tests smoke CPU rapides.
+
+Points de vigilance pour le run reel :
 
 - clarifier le niveau image / patch ;
+- verifier si les identifiants patients sont exploitables ;
+- privilegier un split patient-aware si possible ;
 - surveiller le desequilibre de classes ;
 - eviter toute promesse medicale ;
 - comparer les resultats avec un protocole explicite.
