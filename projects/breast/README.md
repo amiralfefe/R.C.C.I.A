@@ -8,7 +8,7 @@ Ce dossier est un sous-projet du monorepo R.C.C.I.A. Les commandes ci-dessous su
 
 ## Statut
 
-V1 initialisation :
+V1 real dataset run :
 
 - structure du sous-projet creee ;
 - package Python `rccia_breast` ;
@@ -16,7 +16,9 @@ V1 initialisation :
 - scripts BreakHis et split patient-aware ;
 - app Streamlit V1 ;
 - tests smoke CPU rapides ;
-- aucune donnee reelle telechargee dans cette phase.
+- dataset BreakHis Kaggle prepare localement ;
+- split patient-aware realise avec 81 patients detectes ;
+- baseline ResNet18 pre-entrainee entrainee et evaluee.
 
 ## Objectif V1
 
@@ -32,7 +34,7 @@ Preparer une baseline propre pour le dataset public BreakHis :
 - prediction CLI ;
 - demo Streamlit avec Grad-CAM.
 
-## Dataset Prevu
+## Dataset
 
 Dataset cible : **BreakHis / Breast Cancer Histopathological Database**.
 
@@ -44,6 +46,102 @@ Classes normalisees :
 | `malignant` | images histopathologiques malignes |
 
 Point de vigilance : BreakHis contient plusieurs grossissements, typiquement `40X`, `100X`, `200X` et `400X`. Le projet conserve ces informations dans `metadata.csv` quand elles sont detectables.
+
+## Resultats V1 Reels
+
+Dataset utilise : Kaggle `ambarish/breakhis`, extrait dans `C:\VSCODE\datasets\breakhis`.
+
+Structure detectee :
+
+```text
+C:\VSCODE\datasets\breakhis\
+|-- Folds.csv
+`-- BreaKHis_v1/
+    `-- BreaKHis_v1/
+        `-- histology_slides/
+            `-- breast/
+                |-- benign/
+                `-- malignant/
+```
+
+Images preparees dans `projects/breast/data/raw` :
+
+| Classe | Images |
+| --- | ---: |
+| `benign` | 2 480 |
+| `malignant` | 5 429 |
+| **Total** | **7 909** |
+
+Metadata detectee :
+
+| Champ | Resultat |
+| --- | ---: |
+| Patients detectes | 81 |
+| `40X` | 1 995 |
+| `100X` | 2 081 |
+| `200X` | 2 013 |
+| `400X` | 1 820 |
+
+Split patient-aware :
+
+| Split | Benign | Malignant | Total | Patients |
+| --- | ---: | ---: | ---: | ---: |
+| Train | 1 633 | 3 520 | 5 153 | 55 |
+| Val | 339 | 936 | 1 275 | 11 |
+| Test | 508 | 973 | 1 481 | 15 |
+
+Verification leakage : aucun `patient_id` partage entre `train`, `val` et `test`.
+
+Baseline :
+
+- modele : ResNet18 pre-entraine ;
+- epochs : 3 ;
+- batch size : 16 ;
+- image size : 224 ;
+- split : patient-aware.
+
+Historique validation :
+
+| Epoch | Train accuracy | Val accuracy |
+| --- | ---: | ---: |
+| 1 | 0.8830 | 0.7451 |
+| 2 | 0.9280 | 0.8275 |
+| 3 | 0.9488 | 0.8533 |
+
+Evaluation test :
+
+| Classe | Precision | Recall | F1-score | Support |
+| --- | ---: | ---: | ---: | ---: |
+| `benign` | 0.8860 | 0.7953 | 0.8382 | 508 |
+| `malignant` | 0.8985 | 0.9466 | 0.9219 | 973 |
+| **Macro avg** | **0.8923** | **0.8709** | **0.8800** | **1 481** |
+
+Accuracy test : **0.8947**.
+
+Confusions test :
+
+| Vrai label | Prediction | Count |
+| --- | --- | ---: |
+| `benign` | `malignant` | 104 |
+| `malignant` | `benign` | 52 |
+
+Analyse par grossissement :
+
+| Grossissement | Images test | Correctes | Accuracy |
+| --- | ---: | ---: | ---: |
+| `40X` | 378 | 332 | 0.8783 |
+| `100X` | 397 | 354 | 0.8917 |
+| `200X` | 375 | 348 | 0.9280 |
+| `400X` | 331 | 291 | 0.8792 |
+
+Prediction CLI :
+
+- image `benign` testee : commande OK, prediction `benign`, confiance 0.9895 ;
+- image `malignant` testee : commande OK, prediction `benign`, confiance 0.9988, donc exemple d'erreur a analyser dans une prochaine phase.
+
+Streamlit : test local HTTP 200 OK avec `projects/breast/app.py`.
+
+Lecture portfolio : le score est obtenu avec un split patient-aware, donc plus strict qu'un split random image-level. Les resultats restent experimentaux sur dataset public BreakHis et ne constituent pas une validation clinique.
 
 ## Stack Technique
 
@@ -119,7 +217,7 @@ Si le split patient-aware est demande mais impossible, le script echoue avec un 
 ## Entrainement
 
 ```powershell
-.\.venv\Scripts\python.exe -m rccia_breast.train --data-dir projects\breast\data\processed --model resnet18 --epochs 3 --batch-size 16 --image-size 224 --output-dir projects\breast\outputs
+.\.venv\Scripts\python.exe -m projects.breast.rccia_breast.train --data-dir projects\breast\data\processed --model resnet18 --epochs 3 --batch-size 16 --image-size 224 --output-dir projects\breast\outputs
 ```
 
 Modeles supportes :
@@ -131,13 +229,13 @@ Modeles supportes :
 ## Evaluation
 
 ```powershell
-.\.venv\Scripts\python.exe -m rccia_breast.evaluate --data-dir projects\breast\data\processed --checkpoint projects\breast\outputs\best_model.pt --model resnet18 --output-dir projects\breast\outputs\eval
+.\.venv\Scripts\python.exe -m projects.breast.rccia_breast.evaluate --data-dir projects\breast\data\processed --checkpoint projects\breast\outputs\best_model.pt --model resnet18 --output-dir projects\breast\outputs\eval
 ```
 
 ## Prediction CLI
 
 ```powershell
-.\.venv\Scripts\python.exe -m rccia_breast.predict --checkpoint projects\breast\outputs\best_model.pt --image projects\breast\data\processed\test\benign\example.png --pretty
+.\.venv\Scripts\python.exe -m projects.breast.rccia_breast.predict --checkpoint projects\breast\outputs\best_model.pt --image projects\breast\data\processed\test\benign\example.png --pretty
 ```
 
 ## Streamlit
@@ -171,7 +269,7 @@ Depuis la racine du repo :
 
 - Demonstrateur educatif, pas outil medical.
 - Dataset public, sans validation clinique independante.
-- V1 initialisation uniquement : aucun resultat reel BreakHis n'est encore documente.
-- Les futurs scores dependront du split, du niveau de grossissement, du preprocessing et du protocole d'entrainement.
+- Les resultats V1 viennent d'un split patient-aware local, pas d'une cohorte clinique externe.
+- Les scores dependent du split, du niveau de grossissement, du preprocessing et du protocole d'entrainement.
 - Le split patient-aware depend de la disponibilite et de la qualite des identifiants patients.
 - Grad-CAM est une visualisation exploratoire, pas une preuve medicale.

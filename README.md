@@ -10,7 +10,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | --- | --- | --- |
 | [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
 | [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
-| [Breast](projects/breast/README.md) | V1 initialized | Projet BreakHis benign/malignant avec preparation patient-aware split si metadata exploitable |
+| [Breast](projects/breast/README.md) | V1 real baseline | Classification BreakHis benign/malignant avec split patient-aware et baseline ResNet18 |
 | Metastasis | prevu | Projet futur oriente detection/patch classification |
 | MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
 
@@ -128,7 +128,7 @@ cd projects\breast
 ..\..\.venv\Scripts\streamlit.exe run app.py
 ```
 
-V1 initialisation : pipeline BreakHis `benign` vs `malignant`, scripts de preparation, split classique ou patient-aware si `patient_id` est disponible, train/evaluate/predict, Streamlit et tests smoke. Aucun resultat reel BreakHis n'est encore documente.
+V1 reelle : dataset BreakHis Kaggle, 7 909 images, 81 patients detectes, split patient-aware sans overlap patient, baseline ResNet18 pre-entrainee, accuracy test **0.8947**. Le recall `malignant` est **0.9466** sur le split local patient-aware. Ces resultats restent experimentaux et ne constituent pas une validation clinique.
 
 ## Docs Globales
 

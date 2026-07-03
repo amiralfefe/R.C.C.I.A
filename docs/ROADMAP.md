@@ -63,31 +63,36 @@ Prochaines etapes :
 
 ## Phase 3 - Breast
 
-Statut : V1 initialisee, prochain real dataset run.
+Statut : V1 reelle terminee, prochain polish/benchmark.
 
 Objectif : classification `benign` / `malignant` sur BreakHis / Breast Cancer Histopathological Database.
 
-V1 initialisee :
+V1 realisee :
 
 - structure `projects/breast` ;
 - package `rccia_breast` ;
 - classification binaire `benign` vs `malignant` ;
 - scripts de preparation BreakHis ;
-- extraction de grossissement `40X`, `100X`, `200X`, `400X` si possible ;
-- extraction de `patient_id` si lisible ;
-- split classique ou patient-aware ;
+- dataset Kaggle `ambarish/breakhis` prepare localement ;
+- 7 909 images : 2 480 `benign`, 5 429 `malignant` ;
+- extraction de grossissement `40X`, `100X`, `200X`, `400X` ;
+- 81 patients detectes ;
+- split patient-aware sans overlap patient ;
+- train / val / test : 5 153 / 1 275 / 1 481 images ;
 - entrainement, evaluation, prediction CLI ;
-- app Streamlit V1 avec message propre sans checkpoint ;
+- baseline ResNet18 pre-entrainee, epochs 3, image size 224 ;
+- accuracy test 0.8947 ;
+- recall `malignant` 0.9466 ;
+- app Streamlit V1 testee HTTP 200 ;
 - tests smoke CPU rapides.
 
-Points de vigilance pour le run reel :
+Prochaines etapes Breast :
 
-- clarifier le niveau image / patch ;
-- verifier si les identifiants patients sont exploitables ;
-- privilegier un split patient-aware si possible ;
-- surveiller le desequilibre de classes ;
-- eviter toute promesse medicale ;
-- comparer les resultats avec un protocole explicite.
+1. Ajouter captures Streamlit Breast.
+2. Lancer un benchmark ResNet18 / MobileNetV3 small / EfficientNet-B0.
+3. Ajouter error analysis, notamment sur les faux `malignant -> benign`.
+4. Comparer les resultats par grossissement.
+5. Garder le discours strictement educatif, sans promesse medicale.
 
 ## Phase 4 - Metastasis
 
