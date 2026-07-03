@@ -228,6 +228,66 @@ Chaque sous-dossier modele contient son checkpoint local, ses courbes `training_
 
 Voir aussi : [docs/V2_MODEL_COMPARISON.md](docs/V2_MODEL_COMPARISON.md).
 
+## V2.1 - Error Analysis + Interpretability
+
+La V2.1 analyse les erreurs du meilleur checkpoint V2 disponible localement : `efficientnet_b0`, issu de `outputs/model_comparison/efficientnet_b0/best_model.pt`.
+
+Commande lancee depuis la racine du repo :
+
+```powershell
+.\.venv\Scripts\python.exe projects\lung_colon\scripts\analyze_errors.py --data-dir projects\lung_colon\data\processed --checkpoint projects\lung_colon\outputs\model_comparison\efficientnet_b0\best_model.pt --model efficientnet_b0 --output-dir projects\lung_colon\outputs\error_analysis --max-examples 15
+```
+
+Resultats sur le test set LC25000 :
+
+| Metrique | Valeur |
+| --- | ---: |
+| Images test | 3 750 |
+| Predictions correctes | 3 747 |
+| Erreurs | 3 |
+| Accuracy | 0.9992 |
+| Confiance moyenne correctes | 0.9986 |
+| Confiance moyenne erreurs | 0.8624 |
+| Erreurs benign/malignant | 0 |
+| Erreurs lung/colon | 0 |
+
+Erreurs par type :
+
+| Type d'erreur | Count |
+| --- | ---: |
+| `cancer_subtype_confusion` | 3 |
+| `benign_malignant_confusion` | 0 |
+| `lung_colon_confusion` | 0 |
+| `same_organ_confusion` | 0 |
+
+Confusions principales :
+
+| Confusion | Count |
+| --- | ---: |
+| `lung_squamous_cell_carcinoma -> lung_adenocarcinoma` | 2 |
+| `lung_adenocarcinoma -> lung_squamous_cell_carcinoma` | 1 |
+
+Lecture rapide : les rares erreurs restantes concernent uniquement la separation entre deux sous-types malins du poumon. Le modele ne fait aucune confusion colon/poumon et aucune confusion benin/malin sur ce test set. Cela reste une analyse experimentale sur dataset public LC25000, pas une validation clinique.
+
+Artefacts generes localement :
+
+```text
+outputs/error_analysis/
+|-- predictions.csv
+|-- summary.json
+`-- examples/
+    |-- most_confident_error_001.png
+    |-- most_confident_error_001_gradcam.png
+    |-- cancer_subtype_confusion_001.png
+    |-- cancer_subtype_confusion_001_gradcam.png
+    |-- correct_low_confidence_001.png
+    `-- correct_low_confidence_001_gradcam.png
+```
+
+Ces fichiers ne sont pas committes. Streamlit affiche automatiquement la section "Analyse des erreurs V2.1" si `outputs/error_analysis/summary.json` existe localement.
+
+Voir aussi : [docs/V2_ERROR_ANALYSIS.md](docs/V2_ERROR_ANALYSIS.md).
+
 ## Modeles Supportes
 
 - `resnet18` par defaut ;

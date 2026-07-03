@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 from PIL import Image, UnidentifiedImageError
 
+from rccia_lung_colon.error_analysis import load_summary
 from rccia_lung_colon.gradcam import (
     GradCAM,
     denormalize_image,
@@ -18,10 +19,103 @@ from rccia_lung_colon.utils import get_device
 
 
 DEFAULT_CHECKPOINT = "outputs/best_model.pt"
+ERROR_ANALYSIS_DIR = Path("outputs/error_analysis")
+APP_DIR = Path(__file__).resolve().parent
 
 
 def format_percent(value: float) -> str:
     return f"{value:.2%}"
+
+
+def resolve_artifact_path(path: Path) -> Path:
+    if path.is_absolute() or path.exists():
+        return path
+    app_relative_path = APP_DIR / path
+    return app_relative_path if app_relative_path.exists() else path
+
+
+def render_error_analysis_section() -> None:
+    st.divider()
+    st.subheader("Analyse des erreurs V2.1")
+
+    error_analysis_dir = resolve_artifact_path(ERROR_ANALYSIS_DIR)
+    summary_path = error_analysis_dir / "summary.json"
+    summary = load_summary(summary_path)
+    if summary is None:
+        st.info(
+            "Aucune analyse d'erreurs locale detectee. Lance la commande ci-dessous pour "
+            "generer `outputs/error_analysis/summary.json` et les exemples visuels."
+        )
+        st.code(
+            "..\\..\\.venv\\Scripts\\python.exe scripts\\analyze_errors.py "
+            "--data-dir data\\processed "
+            "--checkpoint outputs\\model_comparison\\efficientnet_b0\\best_model.pt "
+            "--model efficientnet_b0 "
+            "--output-dir outputs\\error_analysis "
+            "--max-examples 15",
+            language="powershell",
+        )
+        return
+
+    metrics = st.columns(4)
+    metrics[0].metric("Images test", int(summary.get("total_images", 0)))
+    metrics[1].metric("Erreurs", int(summary.get("error_count", 0)))
+    metrics[2].metric("Accuracy", format_percent(float(summary.get("accuracy", 0))))
+
+    avg_correct = summary.get("average_confidence_correct")
+    avg_errors = summary.get("average_confidence_errors")
+    metrics[3].metric(
+        "Confiance erreurs",
+        "n/a" if avg_errors is None else format_percent(float(avg_errors)),
+    )
+    st.caption(
+        "Confiance moyenne correctes : "
+        f"{'n/a' if avg_correct is None else format_percent(float(avg_correct))}"
+    )
+
+    confusion_pairs = summary.get("confusion_pairs", {})
+    if confusion_pairs:
+        st.write("Confusions principales")
+        st.dataframe(
+            pd.DataFrame(
+                [{"confusion": pair, "count": count} for pair, count in confusion_pairs.items()]
+            ),
+            hide_index=True,
+            use_container_width=True,
+        )
+    else:
+        st.success("Aucune confusion detectee dans le summary local.")
+
+    error_types = summary.get("error_types", {})
+    if error_types:
+        st.write("Types d'erreurs")
+        st.dataframe(
+            pd.DataFrame(
+                [{"type": error_type, "count": count} for error_type, count in error_types.items()]
+            ),
+            hide_index=True,
+            use_container_width=True,
+        )
+
+    exported_examples = summary.get("exported_examples", [])
+    visible_examples = [
+        example
+        for example in exported_examples
+        if example.get("image_path") and Path(example["image_path"]).exists()
+    ][:6]
+    if visible_examples:
+        st.write("Exemples exportes")
+        for example in visible_examples:
+            with st.expander(
+                f"{example['kind']} - {example['true_label']} -> {example['predicted_label']}"
+            ):
+                cols = st.columns(2)
+                cols[0].image(example["image_path"], caption="Image", use_container_width=True)
+                gradcam_path = example.get("gradcam_path")
+                if gradcam_path and Path(gradcam_path).exists():
+                    cols[1].image(gradcam_path, caption="Grad-CAM", use_container_width=True)
+                else:
+                    cols[1].info("Grad-CAM indisponible pour cet exemple.")
 
 
 st.set_page_config(page_title="Lung + Colon Vision", layout="wide")
@@ -116,7 +210,9 @@ else:
 st.divider()
 st.subheader("Limites")
 st.write(
-    "Cette V1 est une initialisation portfolio. Les resultats futurs dependront du dataset "
+    "Cette demo est un projet portfolio educatif. Les resultats dependent du dataset "
     "prepare, du split, du preprocessing et du protocole d'entrainement. Aucun resultat ne "
     "constitue une validation medicale."
 )
+
+render_error_analysis_section()
