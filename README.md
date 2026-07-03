@@ -9,7 +9,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | Projet | Statut | Description |
 | --- | --- | --- |
 | [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
-| [Lung + Colon](projects/lung_colon/README.md) | V2.2 binary mode | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs et mode binaire benin/malin |
+| [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
 | Breast | prevu | Projet futur autour d'un dataset public type tumeurs benignes/malignes |
 | Metastasis | prevu | Projet futur oriente detection/patch classification |
 | MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
@@ -102,6 +102,13 @@ V2 : benchmark comparatif ResNet18 / MobileNetV3 small / EfficientNet-B0. Meille
 V2.1 : analyse des erreurs sur EfficientNet-B0, **3 erreurs sur 3 750 images test**, toutes entre `lung_adenocarcinoma` et `lung_squamous_cell_carcinoma`.
 
 V2.2 : mode binaire `benign` vs `malignant` avec ResNet18 pre-entraine, accuracy test **1.0000** et recall `malignant` **1.0000** sur le split local binaire. Ces resultats sont a interpreter prudemment car LC25000 est un benchmark public relativement facile. Voir [projects/lung_colon/README.md](projects/lung_colon/README.md) pour le protocole et les limites.
+
+Pack portfolio Lung + Colon :
+
+- [Project summary](projects/lung_colon/docs/PROJECT_SUMMARY.md)
+- [Interview pitch](projects/lung_colon/docs/INTERVIEW_PITCH.md)
+- [LinkedIn draft](projects/lung_colon/docs/LINKEDIN_DRAFT.md)
+- [Release notes V2.2](projects/lung_colon/docs/RELEASE_NOTES_V2_2.md)
 
 Les donnees, checkpoints, outputs, tokens Kaggle et environnements virtuels ne sont pas versionnes.
 

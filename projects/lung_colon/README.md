@@ -6,6 +6,27 @@ Projet portfolio IA/data de computer vision pour classifier des images histopath
 
 Ce dossier est un sous-projet du monorepo R.C.C.I.A. Les commandes ci-dessous supposent d'etre place dans `projects/lung_colon` et d'utiliser le venv cree a la racine du repo.
 
+## Final Project Status
+
+Statut actuel : **LungColon V2.2 complete + portfolio publishing pack**.
+
+- V1 : pipeline reel LC25000, classification 5 classes, Streamlit et Grad-CAM.
+- V1.1 : captures Streamlit integrees au README.
+- V2 : benchmark ResNet18 / MobileNetV3 small / EfficientNet-B0.
+- V2.1 : error analysis avec Grad-CAM sur les erreurs et predictions difficiles.
+- V2.2 : mode binaire `benign` vs `malignant`.
+- V2.3 : pack portfolio avec resume projet, pitch entretien, brouillons LinkedIn et release notes.
+
+Docs utiles :
+
+- [Project summary](docs/PROJECT_SUMMARY.md)
+- [Interview pitch](docs/INTERVIEW_PITCH.md)
+- [LinkedIn draft](docs/LINKEDIN_DRAFT.md)
+- [Release notes V2.2](docs/RELEASE_NOTES_V2_2.md)
+- [V2 model comparison](docs/V2_MODEL_COMPARISON.md)
+- [V2 error analysis](docs/V2_ERROR_ANALYSIS.md)
+- [V2 binary mode](docs/V2_BINARY_MODE.md)
+
 ## Objectif V1
 
 Initialiser une baseline multi-classe propre sur le dataset public LC25000 :
