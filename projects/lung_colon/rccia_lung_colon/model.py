@@ -9,7 +9,7 @@ from PIL import Image
 from torch import nn
 from torchvision import models
 
-from rccia_lung_colon.data import build_image_transform
+from .data import build_image_transform
 
 
 SUPPORTED_MODEL_NAMES = ("resnet18", "efficientnet_b0", "mobilenet_v3_small")

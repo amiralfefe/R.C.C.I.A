@@ -8,8 +8,8 @@ import torch
 from PIL import Image
 from torch import nn
 
-from rccia_lung_colon.config import IMAGENET_MEAN, IMAGENET_STD
-from rccia_lung_colon.data import build_image_transform
+from .config import IMAGENET_MEAN, IMAGENET_STD
+from .data import build_image_transform
 
 
 class GradCAM:

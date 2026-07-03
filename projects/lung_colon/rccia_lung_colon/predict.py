@@ -8,8 +8,8 @@ from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 
-from rccia_lung_colon.model import load_checkpoint, predict_image
-from rccia_lung_colon.utils import get_device
+from .model import load_checkpoint, predict_image
+from .utils import get_device
 
 
 def parse_args() -> argparse.Namespace:

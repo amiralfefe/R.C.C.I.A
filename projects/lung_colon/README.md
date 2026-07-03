@@ -288,6 +288,64 @@ Ces fichiers ne sont pas committes. Streamlit affiche automatiquement la section
 
 Voir aussi : [docs/V2_ERROR_ANALYSIS.md](docs/V2_ERROR_ANALYSIS.md).
 
+## V2.2 - Binary Benign vs Malignant Mode
+
+La V2.2 ajoute un second mode de classification en plus du mode 5 classes : `benign` vs `malignant`.
+
+Mapping utilise :
+
+| Classe binaire | Classes sources |
+| --- | --- |
+| `benign` | `colon_benign`, `lung_benign` |
+| `malignant` | `colon_adenocarcinoma`, `lung_adenocarcinoma`, `lung_squamous_cell_carcinoma` |
+
+Preparation du dataset binaire depuis le split 5 classes :
+
+```powershell
+.\.venv\Scripts\python.exe projects\lung_colon\scripts\prepare_binary_dataset.py --input projects\lung_colon\data\processed --output projects\lung_colon\data\binary_processed
+```
+
+Counts generes :
+
+| Split | Benign | Malignant | Total |
+| --- | ---: | ---: | ---: |
+| Train | 7 000 | 10 500 | 17 500 |
+| Val | 1 500 | 2 250 | 3 750 |
+| Test | 1 500 | 2 250 | 3 750 |
+
+Entrainement lance depuis la racine :
+
+```powershell
+.\.venv\Scripts\python.exe -m projects.lung_colon.rccia_lung_colon.train --data-dir projects\lung_colon\data\binary_processed --model resnet18 --epochs 3 --batch-size 16 --image-size 224 --output-dir projects\lung_colon\outputs\binary_resnet18
+```
+
+Evaluation :
+
+```powershell
+.\.venv\Scripts\python.exe -m projects.lung_colon.rccia_lung_colon.evaluate --data-dir projects\lung_colon\data\binary_processed --checkpoint projects\lung_colon\outputs\binary_resnet18\best_model.pt --model resnet18 --output-dir projects\lung_colon\outputs\binary_eval_resnet18
+```
+
+Resultats reels V2.2 avec ResNet18 pre-entraine, `epochs=3`, `batch_size=16`, `image_size=224` :
+
+| Classe | Precision | Recall | F1-score | Support |
+| --- | ---: | ---: | ---: | ---: |
+| `benign` | 1.0000 | 1.0000 | 1.0000 | 1 500 |
+| `malignant` | 1.0000 | 1.0000 | 1.0000 | 2 250 |
+| **Macro avg** | **1.0000** | **1.0000** | **1.0000** | **3 750** |
+
+Accuracy test : **1.0000**. Le recall `malignant` est **1.0000** sur ce split local.
+
+Lecture rapide : le mode binaire est plus simple que le mode 5 classes, car il regroupe les sous-types tumoraux. Les resultats parfaits doivent etre presentes comme un benchmark educatif sur LC25000, pas comme une preuve clinique.
+
+Streamlit propose maintenant un choix dans la sidebar :
+
+- `Mode 5 classes`
+- `Mode binaire benign/malignant`
+
+Le checkpoint binaire par defaut est `outputs/binary_resnet18/best_model.pt`. Si ce checkpoint est absent, Streamlit affiche un message propre et ne plante pas.
+
+Voir aussi : [docs/V2_BINARY_MODE.md](docs/V2_BINARY_MODE.md).
+
 ## Modeles Supportes
 
 - `resnet18` par defaut ;

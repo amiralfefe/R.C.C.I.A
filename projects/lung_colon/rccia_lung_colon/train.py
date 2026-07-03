@@ -11,11 +11,11 @@ from torch import nn
 from torch.optim import AdamW
 from tqdm import tqdm
 
-from rccia_lung_colon.config import TrainConfig
-from rccia_lung_colon.data import build_dataloaders, class_counts
-from rccia_lung_colon.metrics import save_training_curves
-from rccia_lung_colon.model import SUPPORTED_MODEL_NAMES, create_model, save_checkpoint
-from rccia_lung_colon.utils import ensure_dir, get_device, save_json, set_seed
+from .config import TrainConfig
+from .data import build_dataloaders, class_counts
+from .metrics import save_training_curves
+from .model import SUPPORTED_MODEL_NAMES, create_model, save_checkpoint
+from .utils import ensure_dir, get_device, save_json, set_seed
 
 
 def parse_args() -> argparse.Namespace:

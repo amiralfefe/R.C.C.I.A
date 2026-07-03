@@ -27,7 +27,7 @@ v2.2-error-analysis
 
 ## Phase 2 - Lung + Colon
 
-Statut : V2.1 error analysis documentee.
+Statut : V2.2 binary mode documente.
 
 Objectif : construire un deuxieme projet histopathologique a partir du dataset public LC25000, avec cadrage portfolio et disclaimer medical.
 
@@ -45,12 +45,13 @@ V1 realisee :
 - comparaison ResNet18 / MobileNetV3 small / EfficientNet-B0 ;
 - benchmark V2 : meilleur score observe avec EfficientNet-B0, accuracy 0.9992 ;
 - analyse V2.1 : 3 erreurs sur 3 750 images test, toutes entre sous-types malins pulmonaires.
+- mode V2.2 binaire `benign` vs `malignant` avec ResNet18, accuracy test 1.0000 et recall `malignant` 1.0000 sur le split local.
 
 Prochaines etapes :
 
-1. Ajouter un mode binaire exploratoire benin / malin.
-2. Ajouter une synthese portfolio dediee au sous-projet Lung + Colon.
-3. Comparer une strategie plus legere pour deploiement demo.
+1. Ajouter une synthese portfolio dediee au sous-projet Lung + Colon.
+2. Comparer une strategie plus legere pour deploiement demo.
+3. Tester une variante binaire avec un modele plus leger si le temps CPU est acceptable.
 4. Documenter toute nouvelle metrique sans la presenter comme validation medicale.
 
 ## Phase 3 - Breast

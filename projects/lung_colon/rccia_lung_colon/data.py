@@ -7,7 +7,7 @@ from pathlib import Path
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-from rccia_lung_colon.config import IMAGENET_MEAN, IMAGENET_STD
+from .config import IMAGENET_MEAN, IMAGENET_STD
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
 

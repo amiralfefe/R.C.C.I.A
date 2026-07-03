@@ -9,20 +9,21 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from rccia_lung_colon.data import build_dataset
-from rccia_lung_colon.metrics import (
+from .data import build_dataset
+from .metrics import (
     build_classification_report,
     save_classification_report_csv,
     save_confusion_matrix,
 )
-from rccia_lung_colon.model import load_checkpoint
-from rccia_lung_colon.utils import ensure_dir, get_device, save_json
+from .model import SUPPORTED_MODEL_NAMES, load_checkpoint
+from .utils import ensure_dir, get_device, save_json
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate Lung Colon Vision.")
     parser.add_argument("--data-dir", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, default=Path("outputs/best_model.pt"))
+    parser.add_argument("--model", choices=SUPPORTED_MODEL_NAMES, default=None)
     parser.add_argument("--output-dir", type=Path, default=Path("outputs/eval"))
     parser.add_argument("--report-dir", type=Path, default=None)
     parser.add_argument("--batch-size", type=int, default=16)
@@ -59,6 +60,11 @@ def main() -> None:
     model, checkpoint = load_checkpoint(args.checkpoint, device=device)
     class_names = checkpoint["class_names"]
     image_size = int(checkpoint.get("image_size", 224))
+    checkpoint_model_name = checkpoint.get("model_name", "resnet18")
+    if args.model is not None and args.model != checkpoint_model_name:
+        raise ValueError(
+            f"--model {args.model} does not match checkpoint model {checkpoint_model_name}."
+        )
 
     test_dataset = build_dataset(args.data_dir, split="test", image_size=image_size)
     if test_dataset.classes != class_names:

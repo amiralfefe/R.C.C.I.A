@@ -9,7 +9,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | Projet | Statut | Description |
 | --- | --- | --- |
 | [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
-| [Lung + Colon](projects/lung_colon/README.md) | V2.1 error analysis | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles et analyse des erreurs |
+| [Lung + Colon](projects/lung_colon/README.md) | V2.2 binary mode | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs et mode binaire benin/malin |
 | Breast | prevu | Projet futur autour d'un dataset public type tumeurs benignes/malignes |
 | Metastasis | prevu | Projet futur oriente detection/patch classification |
 | MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
@@ -99,7 +99,9 @@ V1 reelle : baseline ResNet18 pre-entrainee sur LC25000, 25 000 images, 5 classe
 
 V2 : benchmark comparatif ResNet18 / MobileNetV3 small / EfficientNet-B0. Meilleur score observe : EfficientNet-B0 avec **0.9992** accuracy test.
 
-V2.1 : analyse des erreurs sur EfficientNet-B0, **3 erreurs sur 3 750 images test**, toutes entre `lung_adenocarcinoma` et `lung_squamous_cell_carcinoma`. Ces resultats sont a interpreter prudemment car LC25000 est un benchmark public relativement facile. Voir [projects/lung_colon/README.md](projects/lung_colon/README.md) pour le protocole et les limites.
+V2.1 : analyse des erreurs sur EfficientNet-B0, **3 erreurs sur 3 750 images test**, toutes entre `lung_adenocarcinoma` et `lung_squamous_cell_carcinoma`.
+
+V2.2 : mode binaire `benign` vs `malignant` avec ResNet18 pre-entraine, accuracy test **1.0000** et recall `malignant` **1.0000** sur le split local binaire. Ces resultats sont a interpreter prudemment car LC25000 est un benchmark public relativement facile. Voir [projects/lung_colon/README.md](projects/lung_colon/README.md) pour le protocole et les limites.
 
 Les donnees, checkpoints, outputs, tokens Kaggle et environnements virtuels ne sont pas versionnes.
 
