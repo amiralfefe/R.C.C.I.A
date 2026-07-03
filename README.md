@@ -9,7 +9,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | Projet | Statut | Description |
 | --- | --- | --- |
 | [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
-| [Lung + Colon](projects/lung_colon/README.md) | V1 reelle | Classification histopathologique LC25000 en 5 classes, ResNet18, Streamlit et Grad-CAM |
+| [Lung + Colon](projects/lung_colon/README.md) | V2 benchmark | Classification LC25000 en 5 classes, Streamlit, Grad-CAM et comparaison ResNet18 / MobileNetV3 / EfficientNet |
 | Breast | prevu | Projet futur autour d'un dataset public type tumeurs benignes/malignes |
 | Metastasis | prevu | Projet futur oriente detection/patch classification |
 | MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
@@ -95,7 +95,9 @@ cd projects\lung_colon
 ..\..\.venv\Scripts\streamlit.exe run app.py
 ```
 
-V1 reelle : baseline ResNet18 pre-entrainee sur LC25000, 25 000 images, 5 classes, accuracy test **0.9965**. Voir [projects/lung_colon/README.md](projects/lung_colon/README.md) pour le protocole et les limites.
+V1 reelle : baseline ResNet18 pre-entrainee sur LC25000, 25 000 images, 5 classes, accuracy test **0.9965**.
+
+V2 : benchmark comparatif ResNet18 / MobileNetV3 small / EfficientNet-B0. Meilleur score observe : EfficientNet-B0 avec **0.9992** accuracy test, a interpreter prudemment car LC25000 est un benchmark public relativement facile. Voir [projects/lung_colon/README.md](projects/lung_colon/README.md) pour le protocole et les limites.
 
 Les donnees, checkpoints, outputs, tokens Kaggle et environnements virtuels ne sont pas versionnes.
 

@@ -178,6 +178,56 @@ Artefacts generes localement dans `outputs/` :
 
 Ces fichiers ne sont pas committes : ils restent des artefacts locaux reproductibles.
 
+## V2 - Model Comparison
+
+La V2 compare trois architectures avec le meme split LC25000, le meme preprocessing et la meme configuration d'entrainement. Objectif : regarder l'accuracy, les F1 par classe, le temps d'entrainement et le compromis performance/cout.
+
+Commande lancee depuis la racine du repo :
+
+```powershell
+.\.venv\Scripts\python.exe projects\lung_colon\scripts\run_model_comparison.py --data-dir projects\lung_colon\data\processed --models resnet18 mobilenet_v3_small efficientnet_b0 --epochs 3 --batch-size 16 --image-size 224 --output-dir projects\lung_colon\outputs\model_comparison
+```
+
+Configuration : poids ImageNet pre-entraines, `epochs=3`, `batch_size=16`, `image_size=224`, `learning_rate=0.0001`, `seed=42`, test set de 3 750 images.
+
+| Modele | Accuracy | Macro F1 | Train time | Eval time | Eval ms/image |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `resnet18` | 0.9965 | 0.9965 | 1 559.23 s | 43.35 s | 11.56 |
+| `mobilenet_v3_small` | 0.9957 | 0.9957 | 874.02 s | 33.89 s | 9.04 |
+| `efficientnet_b0` | 0.9992 | 0.9992 | 3 156.67 s | 58.70 s | 15.65 |
+
+F1-score par classe :
+
+| Modele | colon_adenocarcinoma | colon_benign | lung_adenocarcinoma | lung_benign | lung_squamous_cell_carcinoma |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `resnet18` | 0.9987 | 0.9993 | 0.9920 | 0.9993 | 0.9933 |
+| `mobilenet_v3_small` | 1.0000 | 1.0000 | 0.9892 | 1.0000 | 0.9894 |
+| `efficientnet_b0` | 1.0000 | 1.0000 | 0.9980 | 1.0000 | 0.9980 |
+
+Lecture rapide :
+
+- meilleur score global : `efficientnet_b0` avec 0.9992 accuracy et 0.9992 macro F1 ;
+- modele le plus rapide : `mobilenet_v3_small`, avec 874.02 s d'entrainement et environ 9.04 ms/image en evaluation ;
+- meilleur compromis simple : `mobilenet_v3_small` est tres proche en score, mais beaucoup plus rapide ;
+- confusions restantes : elles concernent surtout `lung_adenocarcinoma` et `lung_squamous_cell_carcinoma`, en particulier pour ResNet18 et MobileNetV3.
+
+Les resultats sont tres eleves, mais LC25000 est un benchmark public relativement facile. Ces chiffres doivent etre presentes comme une evaluation experimentale portfolio, pas comme une preuve clinique ni un outil de diagnostic.
+
+Rapports generes localement :
+
+```text
+outputs/model_comparison/
+|-- summary.csv
+|-- summary.json
+|-- resnet18/
+|-- mobilenet_v3_small/
+`-- efficientnet_b0/
+```
+
+Chaque sous-dossier modele contient son checkpoint local, ses courbes `training_loss.png` et `training_accuracy.png`, son `test_classification_report.json/csv` et sa matrice de confusion `test_confusion_matrix.png`. Ces fichiers restent dans `outputs/` et ne sont pas committes.
+
+Voir aussi : [docs/V2_MODEL_COMPARISON.md](docs/V2_MODEL_COMPARISON.md).
+
 ## Modeles Supportes
 
 - `resnet18` par defaut ;

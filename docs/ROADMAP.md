@@ -27,7 +27,7 @@ v2.2-error-analysis
 
 ## Phase 2 - Lung + Colon
 
-Statut : V1 reelle documentee.
+Statut : V2 benchmark documente.
 
 Objectif : construire un deuxieme projet histopathologique a partir du dataset public LC25000, avec cadrage portfolio et disclaimer medical.
 
@@ -41,13 +41,15 @@ V1 realisee :
 - demo Streamlit + Grad-CAM ;
 - tests smoke sur dataset synthetique ;
 - baseline ResNet18 pre-entrainee sur 25 000 images ;
-- evaluation test multi-classe : accuracy 0.9965.
+- evaluation test multi-classe : accuracy 0.9965 ;
+- comparaison ResNet18 / MobileNetV3 small / EfficientNet-B0 ;
+- benchmark V2 : meilleur score observe avec EfficientNet-B0, accuracy 0.9992.
 
 Prochaines etapes :
 
-1. Ajouter une comparaison de modeles sur LC25000.
-2. Ajouter une analyse d'erreurs multi-classe.
-3. Ajouter des captures Streamlit dediees au sous-projet Lung + Colon.
+1. Ajouter une analyse d'erreurs multi-classe.
+2. Ajouter un mode binaire exploratoire benin / malin.
+3. Ajouter une synthese portfolio dediee au sous-projet Lung + Colon.
 4. Documenter toute nouvelle metrique sans la presenter comme validation medicale.
 
 ## Phase 3 - Breast
