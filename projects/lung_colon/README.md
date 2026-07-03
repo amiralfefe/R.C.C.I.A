@@ -118,6 +118,20 @@ Lancer Streamlit :
 ..\..\.venv\Scripts\streamlit.exe run app.py
 ```
 
+## Apercu De L'application Streamlit
+
+Page d'accueil avec le checkpoint local charge, les classes LC25000 et le disclaimer medical visible :
+
+![Page Streamlit avec modele charge](docs/assets/streamlit-home.png)
+
+Prediction sur une image `lung_adenocarcinoma`, avec probabilites par classe et Grad-CAM :
+
+![Prediction lung adenocarcinoma avec Grad-CAM](docs/assets/prediction-lung-adenocarcinoma.png)
+
+Prediction sur une image `colon_benign`, avec les probabilites par classe :
+
+![Prediction colon benign](docs/assets/prediction-colon-benign.png)
+
 ## Resultats V1 Reels
 
 Run local realise sur CPU avec ResNet18 pre-entraine, `epochs=3`, `batch_size=16`, `image_size=224`, `learning_rate=0.0001` et `seed=42`.
