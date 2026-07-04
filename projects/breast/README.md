@@ -246,6 +246,20 @@ Modeles supportes :
 
 L'application ne plante pas si le checkpoint est absent : elle affiche les commandes a lancer pour entrainer un modele local.
 
+## Apercu de l'application Streamlit
+
+Accueil avec le modele local charge, les classes disponibles et le disclaimer medical :
+
+![Streamlit home](docs/assets/streamlit-home.png)
+
+Prediction `benign` sur une image du test set BreakHis :
+
+![Prediction benign](docs/assets/prediction-benign.png)
+
+Prediction `malignant` sur une image du test set BreakHis :
+
+![Prediction malignant](docs/assets/prediction-malignant.png)
+
 ## Patient-Aware Split
 
 Le point fort attendu de Breast est de limiter le risque de fuite de donnees entre train, validation et test. Si plusieurs images du meme patient apparaissent dans plusieurs splits, les scores peuvent etre trop optimistes.
