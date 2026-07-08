@@ -8,7 +8,7 @@ Ce dossier est un sous-projet du monorepo R.C.C.I.A. Les commandes ci-dessous su
 
 ## Statut
 
-V1 real dataset run :
+V2 model comparison :
 
 - structure du sous-projet creee ;
 - package Python `rccia_breast` ;
@@ -19,6 +19,8 @@ V1 real dataset run :
 - dataset BreakHis Kaggle prepare localement ;
 - split patient-aware realise avec 81 patients detectes ;
 - baseline ResNet18 pre-entrainee entrainee et evaluee.
+- captures Streamlit integrees au README ;
+- benchmark patient-aware ResNet18 / MobileNetV3 small / EfficientNet-B0 realise.
 
 ## Objectif V1
 
@@ -143,6 +145,49 @@ Streamlit : test local HTTP 200 OK avec `projects/breast/app.py`.
 
 Lecture portfolio : le score est obtenu avec un split patient-aware, donc plus strict qu'un split random image-level. Les resultats restent experimentaux sur dataset public BreakHis et ne constituent pas une validation clinique.
 
+## V2 - Model Comparison + Patient-Aware Benchmark
+
+Objectif : comparer plusieurs architectures sur le meme split patient-aware BreakHis, avec les memes hyperparametres.
+
+Commande lancee depuis la racine du monorepo :
+
+```powershell
+.\.venv\Scripts\python.exe projects\breast\scripts\run_model_comparison.py --data-dir projects\breast\data\processed --models resnet18 mobilenet_v3_small efficientnet_b0 --epochs 3 --batch-size 16 --image-size 224 --output-dir projects\breast\outputs\model_comparison
+```
+
+Configuration :
+
+- split patient-aware existant, patient overlap = 0 ;
+- pretrained active ;
+- epochs : 3 ;
+- batch size : 16 ;
+- image size : 224 ;
+- test set : 1 481 images.
+
+Resultats V2 :
+
+| Modele | Accuracy | Macro F1 | Recall malignant | F1 benign | F1 malignant | Train time | Eval ms/image |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `resnet18` | 0.8947 | 0.8800 | 0.9466 | 0.8382 | 0.9219 | 510.19 s | 15.12 |
+| `mobilenet_v3_small` | 0.8575 | 0.8206 | 0.9979 | 0.7392 | 0.9020 | 316.66 s | 8.94 |
+| `efficientnet_b0` | 0.9122 | 0.9004 | 0.9568 | 0.8660 | 0.9347 | 762.23 s | 13.51 |
+
+Accuracy par grossissement :
+
+| Modele | 40X | 100X | 200X | 400X |
+| --- | ---: | ---: | ---: | ---: |
+| `resnet18` | 0.8783 | 0.8917 | 0.9280 | 0.8792 |
+| `mobilenet_v3_small` | 0.7778 | 0.8564 | 0.8987 | 0.9033 |
+| `efficientnet_b0` | 0.8757 | 0.9194 | 0.9467 | 0.9063 |
+
+Lecture rapide :
+
+- `efficientnet_b0` obtient la meilleure accuracy, la meilleure macro F1 et les meilleurs F1 par classe.
+- `mobilenet_v3_small` est le plus rapide et obtient le meilleur recall `malignant`, mais il sacrifie beaucoup le recall/F1 `benign`.
+- `resnet18` reste une baseline stable, avec des resultats identiques a la V1.
+- Le grossissement `200X` reste le plus favorable dans ce benchmark.
+- Ces resultats sont experimentaux sur BreakHis public, avec split patient-aware local, et ne constituent pas une validation clinique.
+
 ## Stack Technique
 
 - Python
@@ -226,6 +271,14 @@ Modeles supportes :
 - `mobilenet_v3_small` ;
 - `efficientnet_b0`.
 
+## Comparaison De Modeles
+
+```powershell
+.\.venv\Scripts\python.exe projects\breast\scripts\run_model_comparison.py --data-dir projects\breast\data\processed --models resnet18 mobilenet_v3_small efficientnet_b0 --epochs 3 --batch-size 16 --image-size 224 --output-dir projects\breast\outputs\model_comparison
+```
+
+Le script genere localement `summary.csv`, `summary.json`, les rapports de classification, matrices de confusion, courbes train/val et checkpoints par modele dans `projects/breast/outputs/model_comparison/`.
+
 ## Evaluation
 
 ```powershell
@@ -270,6 +323,7 @@ Le script de preparation tente donc d'extraire un `patient_id` depuis les noms d
 
 - [Dataset guide](docs/DATASET_GUIDE.md)
 - [Patient-aware split](docs/PATIENT_AWARE_SPLIT.md)
+- [V2 model comparison](docs/V2_MODEL_COMPARISON.md)
 
 ## Tests
 

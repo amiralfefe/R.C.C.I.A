@@ -10,7 +10,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | --- | --- | --- |
 | [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
 | [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
-| [Breast](projects/breast/README.md) | V1 real baseline | Classification BreakHis benign/malignant avec split patient-aware et baseline ResNet18 |
+| [Breast](projects/breast/README.md) | V2 model comparison | Classification BreakHis benign/malignant avec split patient-aware, Streamlit et benchmark ResNet18 / MobileNetV3 / EfficientNet |
 | Metastasis | prevu | Projet futur oriente detection/patch classification |
 | MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
 
@@ -128,7 +128,9 @@ cd projects\breast
 ..\..\.venv\Scripts\streamlit.exe run app.py
 ```
 
-V1 reelle : dataset BreakHis Kaggle, 7 909 images, 81 patients detectes, split patient-aware sans overlap patient, baseline ResNet18 pre-entrainee, accuracy test **0.8947**. Le recall `malignant` est **0.9466** sur le split local patient-aware. Ces resultats restent experimentaux et ne constituent pas une validation clinique.
+V1 reelle : dataset BreakHis Kaggle, 7 909 images, 81 patients detectes, split patient-aware sans overlap patient, baseline ResNet18 pre-entrainee, accuracy test **0.8947**. Le recall `malignant` est **0.9466** sur le split local patient-aware.
+
+V2 : benchmark patient-aware ResNet18 / MobileNetV3 small / EfficientNet-B0. Meilleur score observe : EfficientNet-B0 avec **0.9122** accuracy test et **0.9004** macro F1. MobileNetV3 obtient le meilleur recall `malignant` (**0.9979**) et le temps d'entrainement le plus court, mais avec un F1 `benign` plus faible. Ces resultats restent experimentaux et ne constituent pas une validation clinique.
 
 ## Docs Globales
 
@@ -137,3 +139,4 @@ V1 reelle : dataset BreakHis Kaggle, 7 909 images, 81 patients detectes, split p
 - [Leukemia project summary](projects/leukemia/docs/PROJECT_SUMMARY.md)
 - [Leukemia interview pitch](projects/leukemia/docs/INTERVIEW_PITCH.md)
 - [Leukemia LinkedIn draft](projects/leukemia/docs/LINKEDIN_DRAFT.md)
+- [Breast V2 model comparison](projects/breast/docs/V2_MODEL_COMPARISON.md)

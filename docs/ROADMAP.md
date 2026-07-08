@@ -63,7 +63,7 @@ Prochaines etapes :
 
 ## Phase 3 - Breast
 
-Statut : V1 reelle terminee, prochain polish/benchmark.
+Statut : V2 model comparison terminee.
 
 Objectif : classification `benign` / `malignant` sur BreakHis / Breast Cancer Histopathological Database.
 
@@ -84,14 +84,18 @@ V1 realisee :
 - accuracy test 0.8947 ;
 - recall `malignant` 0.9466 ;
 - app Streamlit V1 testee HTTP 200 ;
+- captures Streamlit ajoutees au README ;
+- benchmark patient-aware ResNet18 / MobileNetV3 small / EfficientNet-B0 ;
+- meilleur score V2 : EfficientNet-B0, accuracy 0.9122 et macro F1 0.9004 ;
+- meilleur recall `malignant` V2 : MobileNetV3 small, recall 0.9979 ;
 - tests smoke CPU rapides.
 
 Prochaines etapes Breast :
 
-1. Ajouter captures Streamlit Breast.
-2. Lancer un benchmark ResNet18 / MobileNetV3 small / EfficientNet-B0.
-3. Ajouter error analysis, notamment sur les faux `malignant -> benign`.
-4. Comparer les resultats par grossissement.
+1. Ajouter error analysis, notamment sur les faux `malignant -> benign`.
+2. Comparer les erreurs par grossissement et par confiance.
+3. Preparer un pack portfolio Breast.
+4. Eventuellement tester une strategie de seuil pour arbitrer recall `malignant` vs faux positifs.
 5. Garder le discours strictement educatif, sans promesse medicale.
 
 ## Phase 4 - Metastasis
