@@ -7,6 +7,7 @@ import pandas as pd
 import streamlit as st
 from PIL import Image, UnidentifiedImageError
 
+from rccia_breast.error_analysis import load_summary
 from rccia_breast.gradcam import (
     GradCAM,
     denormalize_image,
@@ -20,10 +21,17 @@ from rccia_breast.utils import get_device
 
 APP_DIR = Path(__file__).resolve().parent
 DEFAULT_CHECKPOINT = Path("outputs/best_model.pt")
+DEFAULT_ERROR_ANALYSIS_SUMMARY = Path("outputs/error_analysis/summary.json")
 
 
 def format_percent(value: float) -> str:
     return f"{value:.2%}"
+
+
+def format_optional_percent(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    return format_percent(float(value))
 
 
 def resolve_artifact_path(path: Path) -> Path:
@@ -55,6 +63,104 @@ def render_checkpoint_error(model_error: str | None) -> None:
     )
     if model_error:
         st.code(model_error)
+
+
+def load_error_analysis_summary(summary_path: Path) -> dict[str, Any] | None:
+    try:
+        return load_summary(summary_path)
+    except (OSError, ValueError):
+        return None
+
+
+def render_error_analysis_section() -> None:
+    st.divider()
+    st.subheader("Analyse des erreurs V2.1")
+
+    summary_path = resolve_artifact_path(DEFAULT_ERROR_ANALYSIS_SUMMARY)
+    summary = load_error_analysis_summary(summary_path)
+    if summary is None:
+        st.info("Analyse locale non trouvee. Genere-la avec la commande ci-dessous.")
+        st.code(
+            "..\\..\\.venv\\Scripts\\python.exe scripts\\analyze_errors.py "
+            "--data-dir data\\processed "
+            "--checkpoint outputs\\model_comparison\\efficientnet_b0\\best_model.pt "
+            "--model efficientnet_b0 "
+            "--output-dir outputs\\error_analysis "
+            "--metadata data\\raw\\metadata.csv "
+            "--max-examples 15",
+            language="powershell",
+        )
+        return
+
+    st.caption(f"Resume charge : `{summary_path}`")
+    cols = st.columns(5)
+    cols[0].metric("Images test", int(summary.get("total_images", 0)))
+    cols[1].metric("Erreurs", int(summary.get("error_count", 0)))
+    cols[2].metric("False positives", int(summary.get("false_positive_count", 0)))
+    cols[3].metric("False negatives", int(summary.get("false_negative_count", 0)))
+    cols[4].metric("Accuracy", format_optional_percent(summary.get("accuracy")))
+
+    confidence_cols = st.columns(2)
+    confidence_cols[0].metric(
+        "Confiance moyenne correctes",
+        format_optional_percent(summary.get("average_confidence_correct")),
+    )
+    confidence_cols[1].metric(
+        "Confiance moyenne erreurs",
+        format_optional_percent(summary.get("average_confidence_errors")),
+    )
+
+    accuracy_by_magnification = summary.get("accuracy_by_magnification") or {}
+    if accuracy_by_magnification:
+        st.markdown("**Par grossissement**")
+        rows = []
+        errors_by_magnification = summary.get("errors_by_magnification") or {}
+        for magnification, payload in accuracy_by_magnification.items():
+            rows.append(
+                {
+                    "magnification": magnification,
+                    "images": payload.get("total", 0),
+                    "errors": errors_by_magnification.get(magnification, 0),
+                    "accuracy": payload.get("accuracy", 0.0),
+                }
+            )
+        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+
+    top_error_patients = summary.get("top_error_patients") or []
+    if top_error_patients:
+        st.markdown("**Patients avec erreurs**")
+        st.dataframe(pd.DataFrame(top_error_patients), hide_index=True, use_container_width=True)
+
+    exported_examples = summary.get("exported_examples") or []
+    visible_examples = []
+    for example in exported_examples:
+        image_path = resolve_artifact_path(Path(example.get("image_path", "")))
+        gradcam_path_value = example.get("gradcam_path")
+        gradcam_path = (
+            resolve_artifact_path(Path(gradcam_path_value)) if gradcam_path_value else None
+        )
+        if image_path.exists():
+            visible_examples.append((example, image_path, gradcam_path))
+
+    if visible_examples:
+        st.markdown("**Exemples locaux**")
+        for example, image_path, gradcam_path in visible_examples[:8]:
+            left, right = st.columns(2)
+            caption = (
+                f"{example.get('kind')} | true={example.get('true_label')} | "
+                f"pred={example.get('predicted_label')} | "
+                f"conf={format_optional_percent(example.get('confidence'))}"
+            )
+            left.image(str(image_path), caption=caption, use_container_width=True)
+            if gradcam_path and gradcam_path.exists():
+                right.image(str(gradcam_path), caption="Grad-CAM", use_container_width=True)
+            else:
+                right.info("Grad-CAM indisponible pour cet exemple.")
+
+    gradcam_errors = summary.get("gradcam_errors") or []
+    if gradcam_errors:
+        st.info("Certains Grad-CAM n'ont pas pu etre generes.")
+        st.code("\n".join(str(error) for error in gradcam_errors[:5]))
 
 
 def render_app() -> None:
@@ -138,6 +244,8 @@ def render_app() -> None:
                         )
                     except (LookupError, RuntimeError, ValueError) as exc:
                         st.info(f"Grad-CAM indisponible pour cette prediction : {exc}")
+
+    render_error_analysis_section()
 
     st.divider()
     st.subheader("Limites")

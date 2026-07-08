@@ -8,7 +8,7 @@ Ce dossier est un sous-projet du monorepo R.C.C.I.A. Les commandes ci-dessous su
 
 ## Statut
 
-V2 model comparison :
+V2.1 error analysis :
 
 - structure du sous-projet creee ;
 - package Python `rccia_breast` ;
@@ -21,6 +21,7 @@ V2 model comparison :
 - baseline ResNet18 pre-entrainee entrainee et evaluee.
 - captures Streamlit integrees au README ;
 - benchmark patient-aware ResNet18 / MobileNetV3 small / EfficientNet-B0 realise.
+- analyse d'erreurs EfficientNet-B0 avec magnification, patient_id et Grad-CAM local.
 
 ## Objectif V1
 
@@ -188,6 +189,60 @@ Lecture rapide :
 - Le grossissement `200X` reste le plus favorable dans ce benchmark.
 - Ces resultats sont experimentaux sur BreakHis public, avec split patient-aware local, et ne constituent pas une validation clinique.
 
+## V2.1 - Error Analysis + Magnification/Patient Analysis
+
+Objectif : analyser les erreurs du meilleur modele global V2, `efficientnet_b0`, sur le
+split patient-aware BreakHis.
+
+Commande lancee depuis la racine du monorepo :
+
+```powershell
+.\.venv\Scripts\python.exe projects\breast\scripts\analyze_errors.py --data-dir projects\breast\data\processed --checkpoint projects\breast\outputs\model_comparison\efficientnet_b0\best_model.pt --model efficientnet_b0 --output-dir projects\breast\outputs\error_analysis --metadata projects\breast\data\raw\metadata.csv --max-examples 15
+```
+
+Resultats V2.1 :
+
+| Metrique | Valeur |
+| --- | ---: |
+| Images test | 1 481 |
+| Predictions correctes | 1 351 |
+| Erreurs | 130 |
+| Accuracy | 0.9122 |
+| False positives `benign -> malignant` | 88 |
+| False negatives `malignant -> benign` | 42 |
+| Confiance moyenne correctes | 0.9700 |
+| Confiance moyenne erreurs | 0.8464 |
+
+Erreurs par grossissement :
+
+| Grossissement | Images test | Erreurs | Accuracy |
+| --- | ---: | ---: | ---: |
+| `40X` | 378 | 47 | 0.8757 |
+| `100X` | 397 | 32 | 0.9194 |
+| `200X` | 375 | 20 | 0.9467 |
+| `400X` | 331 | 31 | 0.9063 |
+
+Top patients avec erreurs :
+
+| Patient | Images | Erreurs | Accuracy | FP | FN |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `14-16184CD` | 124 | 76 | 0.3871 | 76 | 0 |
+| `14-10926` | 39 | 17 | 0.5641 | 0 | 17 |
+| `14-18842D` | 64 | 13 | 0.7969 | 0 | 13 |
+| `14-22549AB` | 121 | 11 | 0.9091 | 11 | 0 |
+| `14-19440` | 142 | 5 | 0.9648 | 0 | 5 |
+
+Lecture rapide :
+
+- l'erreur dominante est `benign -> malignant` ;
+- le grossissement `40X` est le plus difficile dans cette analyse ;
+- certains patients concentrent une part importante des erreurs ;
+- les predictions correctes sont en moyenne plus confiantes que les erreurs ;
+- 60 exemples locaux ont ete exportes avec Grad-CAM, sans erreur Grad-CAM.
+
+Les outputs V2.1 restent locaux dans `projects/breast/outputs/error_analysis/` et ne
+sont pas committes. Voir [docs/V2_ERROR_ANALYSIS.md](docs/V2_ERROR_ANALYSIS.md).
+
 ## Stack Technique
 
 - Python
@@ -324,6 +379,7 @@ Le script de preparation tente donc d'extraire un `patient_id` depuis les noms d
 - [Dataset guide](docs/DATASET_GUIDE.md)
 - [Patient-aware split](docs/PATIENT_AWARE_SPLIT.md)
 - [V2 model comparison](docs/V2_MODEL_COMPARISON.md)
+- [V2 error analysis](docs/V2_ERROR_ANALYSIS.md)
 
 ## Tests
 

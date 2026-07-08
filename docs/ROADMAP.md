@@ -63,7 +63,7 @@ Prochaines etapes :
 
 ## Phase 3 - Breast
 
-Statut : V2 model comparison terminee.
+Statut : V2.1 error analysis terminee.
 
 Objectif : classification `benign` / `malignant` sur BreakHis / Breast Cancer Histopathological Database.
 
@@ -88,15 +88,17 @@ V1 realisee :
 - benchmark patient-aware ResNet18 / MobileNetV3 small / EfficientNet-B0 ;
 - meilleur score V2 : EfficientNet-B0, accuracy 0.9122 et macro F1 0.9004 ;
 - meilleur recall `malignant` V2 : MobileNetV3 small, recall 0.9979 ;
+- analyse V2.1 : EfficientNet-B0, 130 erreurs sur 1 481 images test ;
+- V2.1 : 88 false positives `benign -> malignant` et 42 false negatives `malignant -> benign` ;
+- V2.1 : analyse par grossissement, par patient, confiance et exemples Grad-CAM locaux ;
 - tests smoke CPU rapides.
 
 Prochaines etapes Breast :
 
-1. Ajouter error analysis, notamment sur les faux `malignant -> benign`.
-2. Comparer les erreurs par grossissement et par confiance.
-3. Preparer un pack portfolio Breast.
-4. Eventuellement tester une strategie de seuil pour arbitrer recall `malignant` vs faux positifs.
-5. Garder le discours strictement educatif, sans promesse medicale.
+1. Preparer un pack portfolio Breast.
+2. Eventuellement tester une strategie de seuil pour arbitrer recall `malignant` vs faux positifs.
+3. Eventuellement comparer l'analyse d'erreurs EfficientNet-B0 avec MobileNetV3 small.
+4. Garder le discours strictement educatif, sans promesse medicale.
 
 ## Phase 4 - Metastasis
 
