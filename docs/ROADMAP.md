@@ -63,7 +63,7 @@ Prochaines etapes :
 
 ## Phase 3 - Breast
 
-Statut : V2.1 error analysis terminee.
+Statut : termine, V2.2 portfolio publishing pack.
 
 Objectif : classification `benign` / `malignant` sur BreakHis / Breast Cancer Histopathological Database.
 
@@ -91,13 +91,14 @@ V1 realisee :
 - analyse V2.1 : EfficientNet-B0, 130 erreurs sur 1 481 images test ;
 - V2.1 : 88 false positives `benign -> malignant` et 42 false negatives `malignant -> benign` ;
 - V2.1 : analyse par grossissement, par patient, confiance et exemples Grad-CAM locaux ;
+- pack final portfolio : resume projet, pitch entretien, brouillons LinkedIn et release notes ;
 - tests smoke CPU rapides.
 
 Prochaines etapes Breast :
 
-1. Preparer un pack portfolio Breast.
-2. Eventuellement tester une strategie de seuil pour arbitrer recall `malignant` vs faux positifs.
-3. Eventuellement comparer l'analyse d'erreurs EfficientNet-B0 avec MobileNetV3 small.
+1. Stopper les ajouts majeurs sur Breast sauf correction documentaire.
+2. Utiliser Breast pour CV, LinkedIn et portfolio.
+3. Demarrer le prochain sous-projet : Metastasis.
 4. Garder le discours strictement educatif, sans promesse medicale.
 
 ## Phase 4 - Metastasis

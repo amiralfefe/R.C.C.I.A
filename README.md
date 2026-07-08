@@ -10,7 +10,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | --- | --- | --- |
 | [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
 | [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
-| [Breast](projects/breast/README.md) | V2.1 error analysis | Classification BreakHis benign/malignant avec split patient-aware, Streamlit, benchmark ResNet18 / MobileNetV3 / EfficientNet et analyse d'erreurs |
+| [Breast](projects/breast/README.md) | V2.2 complete + final pack | Classification BreakHis benign/malignant avec split patient-aware, Streamlit, benchmark ResNet18 / MobileNetV3 / EfficientNet, analyse d'erreurs et docs portfolio |
 | Metastasis | prevu | Projet futur oriente detection/patch classification |
 | MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
 
@@ -133,6 +133,13 @@ V1 reelle : dataset BreakHis Kaggle, 7 909 images, 81 patients detectes, split p
 V2 : benchmark patient-aware ResNet18 / MobileNetV3 small / EfficientNet-B0. Meilleur score observe : EfficientNet-B0 avec **0.9122** accuracy test et **0.9004** macro F1. MobileNetV3 obtient le meilleur recall `malignant` (**0.9979**) et le temps d'entrainement le plus court, mais avec un F1 `benign` plus faible. Ces resultats restent experimentaux et ne constituent pas une validation clinique.
 
 V2.1 : analyse des erreurs sur EfficientNet-B0, **130 erreurs sur 1 481 images test**, avec **88 false positives** (`benign -> malignant`) et **42 false negatives** (`malignant -> benign`). L'analyse inclut les erreurs par grossissement, les patients concentrant le plus d'erreurs et des exemples Grad-CAM locaux non versionnes.
+
+Pack portfolio Breast :
+
+- [Project summary](projects/breast/docs/PROJECT_SUMMARY.md)
+- [Interview pitch](projects/breast/docs/INTERVIEW_PITCH.md)
+- [LinkedIn draft](projects/breast/docs/LINKEDIN_DRAFT.md)
+- [Release notes V2.1](projects/breast/docs/RELEASE_NOTES_V2_1.md)
 
 ## Docs Globales
 

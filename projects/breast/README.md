@@ -22,6 +22,29 @@ V2.1 error analysis :
 - captures Streamlit integrees au README ;
 - benchmark patient-aware ResNet18 / MobileNetV3 small / EfficientNet-B0 realise.
 - analyse d'erreurs EfficientNet-B0 avec magnification, patient_id et Grad-CAM local.
+- pack portfolio V2.2 ajoute pour CV, LinkedIn et entretien.
+
+## Final Project Status
+
+Breast Vision est verrouille comme projet portfolio jusqu'a la V2.2 :
+
+- V1 : real patient-aware baseline sur BreakHis ;
+- V1.1 : captures Streamlit integrees au README ;
+- V2 : model comparison ResNet18 / MobileNetV3 small / EfficientNet-B0 ;
+- V2.1 : error analysis + magnification/patient analysis ;
+- V2.2 : portfolio publishing pack.
+
+Docs portfolio :
+
+- [Project summary](docs/PROJECT_SUMMARY.md)
+- [Interview pitch](docs/INTERVIEW_PITCH.md)
+- [LinkedIn draft](docs/LINKEDIN_DRAFT.md)
+- [Release notes V2.1](docs/RELEASE_NOTES_V2_1.md)
+- [V2 model comparison](docs/V2_MODEL_COMPARISON.md)
+- [V2 error analysis](docs/V2_ERROR_ANALYSIS.md)
+- [Patient-aware split](docs/PATIENT_AWARE_SPLIT.md)
+
+Tag de reference prevu : `breast-v2.1-error-analysis`.
 
 ## Objectif V1
 
@@ -380,6 +403,10 @@ Le script de preparation tente donc d'extraire un `patient_id` depuis les noms d
 - [Patient-aware split](docs/PATIENT_AWARE_SPLIT.md)
 - [V2 model comparison](docs/V2_MODEL_COMPARISON.md)
 - [V2 error analysis](docs/V2_ERROR_ANALYSIS.md)
+- [Project summary](docs/PROJECT_SUMMARY.md)
+- [Interview pitch](docs/INTERVIEW_PITCH.md)
+- [LinkedIn draft](docs/LINKEDIN_DRAFT.md)
+- [Release notes V2.1](docs/RELEASE_NOTES_V2_1.md)
 
 ## Tests
 
