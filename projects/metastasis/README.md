@@ -159,12 +159,36 @@ Prediction CLI :
 Streamlit :
 
 - l'application fonctionne sans checkpoint ;
-- le test headless avec checkpoint n'a pas pu etre relance dans cette session a cause
-  d'une limite d'escalade d'outil.
+- checkpoint local charge avec succes ;
+- predictions Streamlit testees sur un exemple `non_metastatic` et un exemple
+  `metastatic` du test set local ;
+- captures V1.1 ajoutees dans `docs/assets/`.
 
 Lecture portfolio : ce run valide le pipeline Metastasis sur un vrai subset PCam HDF5
 converti localement. Les resultats restent experimentaux, sur subset validation et sans
 validation clinique externe.
+
+## Apercu de l'application Streamlit
+
+L'application locale permet de charger un patch histopathologique, d'obtenir une
+prediction binaire, de lire les probabilites par classe et de consulter la zone Grad-CAM
+lorsqu'un checkpoint compatible est disponible.
+
+> Demonstrateur educatif / portfolio uniquement : cette application ne fournit pas de
+> diagnostic medical, ne remplace pas une validation clinique et ne doit jamais orienter
+> une decision de sante.
+
+### Accueil et modele charge
+
+![Page Streamlit Metastasis](docs/assets/streamlit-home.png)
+
+### Prediction `non_metastatic`
+
+![Prediction non metastatic](docs/assets/prediction-non-metastatic.png)
+
+### Prediction `metastatic`
+
+![Prediction metastatic](docs/assets/prediction-metastatic.png)
 
 ## Stack Technique
 
@@ -288,8 +312,7 @@ Depuis la racine du repo :
 ## Limites
 
 - Demonstrateur educatif, pas outil medical.
-- Dataset reel non encore execute dans cette phase.
-- Kaggle non authentifie avec le token local actuel pendant cette tentative.
-- Les fichiers PCam officiels sont volumineux et distribues en `.h5.gz`.
+- Run V1 effectue sur un subset equilibre de la validation PCam, pas sur tout le corpus.
+- Les fichiers PCam officiels sont volumineux et certaines distributions utilisent `.h5.gz`.
 - Pas de validation clinique, pas de certification, pas d'usage diagnostic.
 - Grad-CAM est une visualisation exploratoire, pas une preuve medicale.
