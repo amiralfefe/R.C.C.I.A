@@ -11,7 +11,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
 | [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
 | [Breast](projects/breast/README.md) | V2.2 complete + final pack | Classification BreakHis benign/malignant avec split patient-aware, Streamlit, benchmark ResNet18 / MobileNetV3 / EfficientNet, analyse d'erreurs et docs portfolio |
-| [Metastasis](projects/metastasis/README.md) | V1 initialized | Classification de patches `non_metastatic` vs `metastatic`, pipeline PyTorch, ROC-AUC / PR-AUC, Streamlit et Grad-CAM prepares |
+| [Metastasis](projects/metastasis/README.md) | V2 model comparison | Classification de patches `non_metastatic` vs `metastatic`, pipeline PyTorch, ROC-AUC / PR-AUC, Streamlit, Grad-CAM et benchmark multi-modeles |
 | MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
 
 ## Projet Principal Termine
@@ -159,6 +159,8 @@ cd projects\metastasis
 
 V1 reelle : dataset Kaggle `tyson04/pcam-validate`, subset PCam HDF5 equilibre de 5 000 patches converti en ImageFolder, baseline ResNet18 pre-entrainee, accuracy test **0.9040**, ROC-AUC **0.9598**, PR-AUC **0.9616**. Ces resultats restent experimentaux sur subset public, sans validation clinique.
 
+V2 : benchmark ResNet18 / MobileNetV3 small / EfficientNet-B0 sur le meme subset PCam 96x96. Meilleur score observe : EfficientNet-B0 avec **0.9320** accuracy test, **0.9320** macro F1, **0.9762** ROC-AUC et **0.9780** PR-AUC. ResNet18 obtient le meilleur recall `metastatic` (**0.9307**) et MobileNetV3 small est le plus rapide a entrainer. Voir [projects/metastasis/docs/V2_MODEL_COMPARISON.md](projects/metastasis/docs/V2_MODEL_COMPARISON.md).
+
 ## Docs Globales
 
 - [Roadmap](docs/ROADMAP.md)
@@ -170,3 +172,4 @@ V1 reelle : dataset Kaggle `tyson04/pcam-validate`, subset PCam HDF5 equilibre d
 - [Breast V2 error analysis](projects/breast/docs/V2_ERROR_ANALYSIS.md)
 - [Metastasis dataset guide](projects/metastasis/docs/DATASET_GUIDE.md)
 - [Metastasis metrics guide](projects/metastasis/docs/METRICS_GUIDE.md)
+- [Metastasis V2 model comparison](projects/metastasis/docs/V2_MODEL_COMPARISON.md)

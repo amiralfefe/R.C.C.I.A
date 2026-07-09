@@ -190,6 +190,36 @@ lorsqu'un checkpoint compatible est disponible.
 
 ![Prediction metastatic](docs/assets/prediction-metastatic.png)
 
+## V2 - Model Comparison
+
+La V2 compare trois architectures CNN avec le meme split PCam subset que la V1.
+L'image size reste a `96`, car PCam fournit des patches natifs 96x96. Les sorties
+completes sont generees localement dans `outputs/model_comparison/` et ne sont pas
+versionnees.
+
+Commande lancee :
+
+```powershell
+.\.venv\Scripts\python.exe projects\metastasis\scripts\run_model_comparison.py --data-dir projects\metastasis\data\processed --models resnet18 mobilenet_v3_small efficientnet_b0 --epochs 3 --batch-size 32 --image-size 96 --output-dir projects\metastasis\outputs\model_comparison
+```
+
+Resultats reels V2 :
+
+| Modele | Accuracy | Macro F1 | ROC-AUC | PR-AUC | F1 `non_metastatic` | F1 `metastatic` | Recall `metastatic` | Train time |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| ResNet18 | 0.9040 | 0.9039 | 0.9706 | 0.9672 | 0.9014 | 0.9065 | **0.9307** | 112.86 s |
+| MobileNetV3 small | 0.8573 | 0.8567 | 0.9374 | 0.9236 | 0.8474 | 0.8661 | 0.9227 | **64.82 s** |
+| EfficientNet-B0 | **0.9320** | **0.9320** | **0.9762** | **0.9780** | **0.9323** | **0.9317** | 0.9280 | 93.17 s |
+
+Lecture courte :
+
+- meilleur accuracy, macro F1, ROC-AUC et PR-AUC : `efficientnet_b0` ;
+- meilleur recall `metastatic` : `resnet18` ;
+- modele le plus rapide a entrainer : `mobilenet_v3_small` ;
+- MobileNetV3 est plus leger mais moins performant sur ce subset ;
+- ces scores sont des resultats experimentaux sur subset PCam public, pas une
+  validation clinique.
+
 ## Stack Technique
 
 - Python
@@ -300,6 +330,7 @@ Voir [docs/METRICS_GUIDE.md](docs/METRICS_GUIDE.md).
 
 - [Dataset guide](docs/DATASET_GUIDE.md)
 - [Metrics guide](docs/METRICS_GUIDE.md)
+- [V2 model comparison](docs/V2_MODEL_COMPARISON.md)
 
 ## Tests
 
