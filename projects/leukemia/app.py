@@ -18,8 +18,10 @@ from rccia_leukemia.model import load_checkpoint, predict_image
 from rccia_leukemia.utils import get_device
 
 
-DEFAULT_CHECKPOINT = "outputs/best_model.pt"
-DEFAULT_ERROR_ANALYSIS_DIR = Path("outputs/error_analysis")
+APP_DIR = Path(__file__).resolve().parent
+DEFAULT_CHECKPOINT_LABEL = "outputs/best_model.pt"
+DEFAULT_CHECKPOINT = APP_DIR / "outputs" / "best_model.pt"
+DEFAULT_ERROR_ANALYSIS_DIR = APP_DIR / "outputs" / "error_analysis"
 
 V1_CLASS_RESULTS = pd.DataFrame(
     [
@@ -51,6 +53,13 @@ def load_model(checkpoint_path: str):
     return model, checkpoint, device
 
 
+def resolve_artifact_path(path_text: str) -> Path:
+    path = Path(path_text)
+    if path.is_absolute():
+        return path
+    return APP_DIR / path
+
+
 def format_percent(value: float) -> str:
     return f"{value:.2%}"
 
@@ -68,9 +77,9 @@ st.warning(
     "ne fournit pas de diagnostic et ne doit pas orienter une decision de sante."
 )
 
-checkpoint_path = st.sidebar.text_input("Checkpoint", value=DEFAULT_CHECKPOINT)
+checkpoint_path = st.sidebar.text_input("Checkpoint", value=DEFAULT_CHECKPOINT_LABEL)
 show_gradcam = st.sidebar.toggle("Afficher Grad-CAM", value=True)
-checkpoint = Path(checkpoint_path)
+checkpoint = resolve_artifact_path(checkpoint_path)
 
 model = None
 checkpoint_data = None
@@ -91,8 +100,8 @@ st.sidebar.subheader("Etat du modele")
 if not checkpoint.exists():
     st.sidebar.error("Checkpoint absent")
     st.sidebar.caption(
-        "Chemin attendu par defaut : `outputs/best_model.pt`. "
-        "Lance l'entrainement avant la demo."
+        "Chemin attendu par defaut : `outputs/best_model.pt` dans "
+        "`projects/leukemia`. Lance l'entrainement avant la demo."
     )
 elif model_error is not None:
     st.sidebar.error("Checkpoint trouve mais impossible a charger")
