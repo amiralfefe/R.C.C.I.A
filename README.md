@@ -157,7 +157,7 @@ cd projects\metastasis
 ..\..\.venv\Scripts\streamlit.exe run app.py
 ```
 
-V1 initialisee : pipeline binaire `non_metastatic` vs `metastatic`, support ResNet18 / MobileNetV3 small / EfficientNet-B0, evaluation avec accuracy, precision, recall, F1, ROC-AUC, PR-AUC, matrice de confusion, courbe ROC et courbe precision/recall. Le dataset reel PCam / PatchCamelyon n'est pas encore telecharge dans cette phase ; le script de preparation supporte les image-folders et les fichiers HDF5 PCam non compresses.
+V1 reelle : dataset Kaggle `tyson04/pcam-validate`, subset PCam HDF5 equilibre de 5 000 patches converti en ImageFolder, baseline ResNet18 pre-entrainee, accuracy test **0.9040**, ROC-AUC **0.9598**, PR-AUC **0.9616**. Ces resultats restent experimentaux sur subset public, sans validation clinique.
 
 ## Docs Globales
 

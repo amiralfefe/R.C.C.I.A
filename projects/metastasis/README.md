@@ -12,7 +12,7 @@ d'etre place a la racine du repo.
 
 ## Statut
 
-V1 initialisation :
+V1 real dataset run :
 
 - structure du sous-projet creee ;
 - package Python `rccia_metastasis` ;
@@ -23,10 +23,11 @@ V1 initialisation :
 - conversion HDF5 PCam vers ImageFolder preparee si `h5py` est installe ;
 - app Streamlit V1 avec Grad-CAM si checkpoint disponible ;
 - tests smoke CPU rapides.
+- dataset PCam validation HDF5 telecharge et prepare localement ;
+- baseline ResNet18 pre-entrainee entrainee sur un subset reel equilibre.
 
-Le dataset reel n'a pas ete telecharge dans cette phase : Kaggle n'etait pas authentifie
-avec le token local actuel, et la source officielle PCam est disponible en HDF5 volumineux
-qu'il faut telecharger/decompresser volontairement.
+Le run reel V1 utilise un subset equilibre de la validation PCam pour garder un temps CPU
+raisonnable. Les donnees, outputs et checkpoints restent locaux et ne sont pas versionnes.
 
 ## Objectif V1
 
@@ -60,6 +61,110 @@ Le script V1 supporte :
 - les fichiers PCam HDF5 non compresses via `--x-h5` et `--y-h5`.
 
 Les archives officielles `.h5.gz` doivent etre decompressees avant conversion.
+
+## Resultats V1 Reels
+
+Dataset utilise : Kaggle `tyson04/pcam-validate`, base sur PCam / PatchCamelyon.
+
+Telechargement :
+
+| Fichier | Taille |
+| --- | ---: |
+| `pcam-validate.zip` | 766 MiB |
+| `camelyonpatch_level_2_split_valid_x.h5` | 906 040 528 bytes |
+| `camelyonpatch_level_2_split_valid_y.h5` | 34 816 bytes |
+
+Structure HDF5 detectee :
+
+| Fichier | Dataset | Shape | Type |
+| --- | --- | --- | --- |
+| `camelyonpatch_level_2_split_valid_x.h5` | `x` | `(32768, 96, 96, 3)` | `uint8` |
+| `camelyonpatch_level_2_split_valid_y.h5` | `y` | `(32768, 1, 1, 1)` | `uint8` |
+
+Labels dans le fichier complet :
+
+| Label | Images |
+| --- | ---: |
+| `0` / `non_metastatic` | 16 399 |
+| `1` / `metastatic` | 16 369 |
+
+Subset converti pour la V1 CPU :
+
+| Classe | Images |
+| --- | ---: |
+| `non_metastatic` | 2 500 |
+| `metastatic` | 2 500 |
+| **Total** | **5 000** |
+
+Commande de preparation lancee :
+
+```powershell
+.\.venv\Scripts\python.exe projects\metastasis\scripts\prepare_pcam_dataset.py --x-h5 C:\VSCODE\datasets\pcam\camelyonpatch_level_2_split_valid_x.h5 --y-h5 C:\VSCODE\datasets\pcam\camelyonpatch_level_2_split_valid_y.h5 --split-name valid --output projects\metastasis\data\raw --max-per-class 2500
+```
+
+Split :
+
+| Split | `non_metastatic` | `metastatic` | Total |
+| --- | ---: | ---: | ---: |
+| Train | 1 750 | 1 750 | 3 500 |
+| Val | 375 | 375 | 750 |
+| Test | 375 | 375 | 750 |
+
+Baseline :
+
+- modele : ResNet18 pre-entraine ;
+- epochs : 3 ;
+- batch size : 32 ;
+- image size : 96 ;
+- dataset : subset reel PCam validation, equilibre.
+
+Historique validation :
+
+| Epoch | Train accuracy | Val accuracy |
+| --- | ---: | ---: |
+| 1 | 0.8111 | 0.8813 |
+| 2 | 0.8820 | 0.9133 |
+| 3 | 0.8957 | 0.9080 |
+
+Best val accuracy : **0.9133**.
+
+Evaluation test :
+
+| Classe | Precision | Recall | F1-score | Support |
+| --- | ---: | ---: | ---: | ---: |
+| `metastatic` | 0.9040 | 0.9040 | 0.9040 | 375 |
+| `non_metastatic` | 0.9040 | 0.9040 | 0.9040 | 375 |
+| **Macro avg** | **0.9040** | **0.9040** | **0.9040** | **750** |
+
+Metrices globales :
+
+| Metrique | Valeur |
+| --- | ---: |
+| Accuracy | 0.9040 |
+| ROC-AUC | 0.9598 |
+| PR-AUC | 0.9616 |
+
+Matrice de confusion, ordre des classes : `metastatic`, `non_metastatic`.
+
+| Vrai \ Pred | `metastatic` | `non_metastatic` |
+| --- | ---: | ---: |
+| `metastatic` | 339 | 36 |
+| `non_metastatic` | 36 | 339 |
+
+Prediction CLI :
+
+- image `non_metastatic` testee : OK, prediction `non_metastatic`, confiance 0.9112 ;
+- image `metastatic` testee : OK, prediction `metastatic`, confiance 0.9998.
+
+Streamlit :
+
+- l'application fonctionne sans checkpoint ;
+- le test headless avec checkpoint n'a pas pu etre relance dans cette session a cause
+  d'une limite d'escalade d'outil.
+
+Lecture portfolio : ce run valide le pipeline Metastasis sur un vrai subset PCam HDF5
+converti localement. Les resultats restent experimentaux, sur subset validation et sans
+validation clinique externe.
 
 ## Stack Technique
 

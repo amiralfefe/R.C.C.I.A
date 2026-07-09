@@ -103,7 +103,7 @@ Prochaines etapes Breast :
 
 ## Phase 4 - Metastasis
 
-Statut : V1 initialisee.
+Statut : V1 reelle sur subset PCam.
 
 Objectif : detection ou classification de patches lies a des metastases sur dataset public,
 typiquement PCam / PatchCamelyon ou equivalent.
@@ -120,15 +120,19 @@ V1 initialisee :
 - evaluation avec accuracy, precision, recall, F1, ROC-AUC et PR-AUC ;
 - matrices de confusion, courbes ROC et precision/recall ;
 - demo Streamlit V1 avec Grad-CAM si checkpoint disponible ;
+- dataset Kaggle `tyson04/pcam-validate` telecharge localement ;
+- subset equilibre de 5 000 patches PCam converti en ImageFolder ;
+- baseline ResNet18 pre-entrainee, accuracy test 0.9040 ;
+- ROC-AUC 0.9598 et PR-AUC 0.9616 sur le test local ;
 - tests smoke CPU rapides.
 
 Prochaines etapes Metastasis :
 
-1. Renouveler l'authentification Kaggle ou telecharger volontairement PCam officiel.
-2. Decompresser les fichiers `.h5.gz` si la source officielle est utilisee.
-3. Preparer `data/raw` et `data/processed`.
-4. Lancer une baseline ResNet18.
-5. Evaluer ROC-AUC, PR-AUC et courbes de seuil.
+1. Tester Streamlit manuellement avec le checkpoint local.
+2. Ajouter des captures Streamlit Metastasis.
+3. Comparer ResNet18, MobileNetV3 small et EfficientNet-B0.
+4. Ajouter une analyse de seuil precision/recall.
+5. Eventuellement elargir au train split complet si le temps CPU/GPU le permet.
 6. Garder le discours strictement educatif, sans promesse medicale.
 
 ## Phase 5 - MultiCancer
