@@ -7,6 +7,12 @@ patches histopathologiques annote pour la presence de metastases.
 
 Le projet reste educatif / portfolio uniquement. Il ne fournit pas de diagnostic medical.
 
+Source officielle PCam : <https://github.com/basveeling/pcam>.
+
+La distribution officielle contient 327 680 images couleur 96x96 px, avec un label
+binaire indiquant la presence de tissu metastatique. Les fichiers sont publies en HDF5
+gzippes, separes en train/valid/test.
+
 ## Objectif
 
 Normaliser un dataset binaire vers deux classes :
@@ -38,11 +44,20 @@ Alias reconnus :
 
 ## HDF5 / CSV
 
-PCam est souvent distribue en formats HDF5 ou CSV selon les sources. La V1 du script ne
-convertit pas encore directement les fichiers `.h5` / `.hdf5`. Si seuls des fichiers HDF5
-sont detectes, le script echoue avec un message clair au lieu de faire semblant.
+PCam est souvent distribue en formats HDF5 ou CSV selon les sources. La V1 du script
+supporte les fichiers `.h5` / `.hdf5` non compresses avec `--x-h5` et `--y-h5`.
 
-Une future version pourra ajouter un convertisseur dedie HDF5 -> images.
+Les fichiers officiels `.h5.gz` doivent etre decompressees avant conversion. Le script
+refuse les `.h5.gz` directement pour eviter un comportement ambigu.
+
+Exemple HDF5 :
+
+```powershell
+.\.venv\Scripts\python.exe projects\metastasis\scripts\prepare_pcam_dataset.py --x-h5 C:\VSCODE\datasets\pcam\camelyonpatch_level_2_split_train_x.h5 --y-h5 C:\VSCODE\datasets\pcam\camelyonpatch_level_2_split_train_y.h5 --split-name train --output projects\metastasis\data\raw --max-per-class 5000
+```
+
+Le parametre `--max-per-class` permet de creer un premier subset CPU raisonnable sans
+exporter tout PCam d'un coup.
 
 ## Preparation
 
@@ -50,6 +65,12 @@ Depuis la racine du monorepo :
 
 ```powershell
 .\.venv\Scripts\python.exe projects\metastasis\scripts\prepare_pcam_dataset.py --input C:\VSCODE\datasets\pcam --output projects\metastasis\data\raw
+```
+
+Ou en HDF5 non compresse :
+
+```powershell
+.\.venv\Scripts\python.exe projects\metastasis\scripts\prepare_pcam_dataset.py --x-h5 C:\VSCODE\datasets\pcam\camelyonpatch_level_2_split_train_x.h5 --y-h5 C:\VSCODE\datasets\pcam\camelyonpatch_level_2_split_train_y.h5 --output projects\metastasis\data\raw --split-name train --max-per-class 5000
 ```
 
 Structure raw attendue :
@@ -97,4 +118,3 @@ Les dossiers suivants restent locaux et ne doivent pas etre committes :
 
 Ce projet est un demonstrateur IA/data educatif. Il ne constitue pas un outil medical,
 pas un diagnostic et pas une validation clinique.
-

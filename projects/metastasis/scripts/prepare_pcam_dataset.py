@@ -9,9 +9,11 @@ import shutil
 from collections import Counter
 from pathlib import Path
 
+import numpy as np
+from PIL import Image
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
-HDF5_EXTENSIONS = {".h5", ".hdf5"}
+HDF5_EXTENSIONS = {".h5", ".hdf5", ".gz"}
 CLASS_ALIASES = {
     "non_metastatic": {
         "non_metastatic",
@@ -36,9 +38,14 @@ CLASS_ALIASES = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Prepare a PCam-like metastasis dataset.")
-    parser.add_argument("--input", "--source", dest="source", type=Path, required=True)
+    parser.add_argument("--input", "--source", dest="source", type=Path, default=None)
     parser.add_argument("--output", type=Path, default=Path("data/raw"))
     parser.add_argument("--max-per-class", type=int, default=None)
+    parser.add_argument("--x-h5", type=Path, default=None, help="PCam HDF5 image file, uncompressed.")
+    parser.add_argument("--y-h5", type=Path, default=None, help="PCam HDF5 label file, uncompressed.")
+    parser.add_argument("--hdf5-key-x", default="x")
+    parser.add_argument("--hdf5-key-y", default="y")
+    parser.add_argument("--split-name", default="train")
     parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
 
@@ -98,34 +105,124 @@ def unique_target(destination_dir: Path, source: Path, index: int) -> Path:
 
 
 def write_metadata(rows: list[dict[str, str]], output_path: Path) -> None:
-    fieldnames = ["class_name", "relative_path", "output_path", "source_path"]
+    base_fields = ["class_name", "relative_path", "output_path", "source_path", "split", "source_index"]
+    fieldnames = [field for field in base_fields if any(field in row for row in rows)]
     with output_path.open("w", encoding="utf-8", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
 
 
-def main() -> None:
-    args = parse_args()
-    if not args.source.exists():
-        raise FileNotFoundError(f"Input folder not found: {args.source}")
+def label_to_class(label: object) -> str:
+    value = int(np.asarray(label).squeeze())
+    if value == 0:
+        return "non_metastatic"
+    if value == 1:
+        return "metastatic"
+    raise ValueError(f"Unsupported binary label in HDF5 file: {value}")
 
-    images = collect_images(args.source)
+
+def image_array_to_pil(image_array: object) -> Image.Image:
+    image = np.asarray(image_array)
+    if image.dtype != np.uint8:
+        image = np.clip(image, 0, 255).astype(np.uint8)
+    if image.ndim != 3 or image.shape[-1] not in {1, 3, 4}:
+        raise ValueError(f"Unsupported HDF5 image shape: {image.shape}")
+    if image.shape[-1] == 1:
+        image = image.squeeze(axis=-1)
+    return Image.fromarray(image).convert("RGB")
+
+
+def prepare_hdf5_dataset(
+    x_h5: Path,
+    y_h5: Path,
+    output_dir: Path,
+    split_name: str,
+    hdf5_key_x: str,
+    hdf5_key_y: str,
+    max_per_class: int | None,
+) -> None:
+    try:
+        import h5py
+    except ImportError as exc:
+        raise RuntimeError(
+            "HDF5 conversion requires h5py. Install dependencies with "
+            "`python -m pip install -r requirements.txt`."
+        ) from exc
+
+    if not x_h5.exists():
+        raise FileNotFoundError(f"HDF5 image file not found: {x_h5}")
+    if not y_h5.exists():
+        raise FileNotFoundError(f"HDF5 label file not found: {y_h5}")
+    if x_h5.suffix.lower() == ".gz" or y_h5.suffix.lower() == ".gz":
+        raise ValueError(
+            "Compressed .h5.gz files must be decompressed before conversion. "
+            "Expected uncompressed .h5 files."
+        )
+
+    rows: list[dict[str, str]] = []
+    counts: Counter[str] = Counter()
+    with h5py.File(x_h5, "r") as images_file, h5py.File(y_h5, "r") as labels_file:
+        if hdf5_key_x not in images_file:
+            raise KeyError(f"Image key '{hdf5_key_x}' not found in {x_h5}.")
+        if hdf5_key_y not in labels_file:
+            raise KeyError(f"Label key '{hdf5_key_y}' not found in {y_h5}.")
+
+        images = images_file[hdf5_key_x]
+        labels = labels_file[hdf5_key_y]
+        if len(images) != len(labels):
+            raise ValueError(f"HDF5 image/label count mismatch: {len(images)} vs {len(labels)}")
+
+        for index in range(len(images)):
+            class_name = label_to_class(labels[index])
+            if max_per_class is not None and counts[class_name] >= max_per_class:
+                if all(counts[name] >= max_per_class for name in ("non_metastatic", "metastatic")):
+                    break
+                continue
+
+            destination_dir = output_dir / class_name
+            destination_dir.mkdir(parents=True, exist_ok=True)
+            target = destination_dir / f"{split_name}_{class_name}_{counts[class_name]:06d}.png"
+            image = image_array_to_pil(images[index])
+            image.save(target)
+            counts[class_name] += 1
+            rows.append(
+                {
+                    "class_name": class_name,
+                    "relative_path": str(target.relative_to(output_dir)),
+                    "output_path": str(target),
+                    "source_path": str(x_h5),
+                    "split": split_name,
+                    "source_index": str(index),
+                }
+            )
+
+    if not rows:
+        raise ValueError("No images were exported from HDF5 files.")
+
+    write_metadata(rows, output_dir / "metadata.csv")
+    print(f"metadata: {output_dir / 'metadata.csv'}")
+    print(f"class_counts: {dict(sorted(counts.items()))}")
+
+
+def prepare_image_folder_dataset(source: Path, output_dir: Path, max_per_class: int | None) -> None:
+    if not source.exists():
+        raise FileNotFoundError(f"Input folder not found: {source}")
+
+    images = collect_images(source)
     if not images:
-        hdf5_files = detect_hdf5_files(args.source)
+        hdf5_files = detect_hdf5_files(source)
         if hdf5_files:
             raise ValueError(
-                "HDF5 files were found, but this V1 script only supports image folders. "
-                "Export PCam patches to class folders first, or add a dedicated HDF5 converter."
+                "HDF5 files were found. Use --x-h5 and --y-h5 with uncompressed PCam .h5 files "
+                "to convert them, or export patches to class folders first."
             )
-        raise ValueError(f"No supported images found under {args.source}.")
-
-    prepare_output(args.output, overwrite=args.overwrite)
+        raise ValueError(f"No supported images found under {source}.")
 
     selected_by_class: dict[str, list[Path]] = {"non_metastatic": [], "metastatic": []}
     skipped = 0
     for image_path in images:
-        class_name = detect_class(image_path, args.source)
+        class_name = detect_class(image_path, source)
         if class_name is None:
             skipped += 1
             continue
@@ -135,15 +232,15 @@ def main() -> None:
     counts: Counter[str] = Counter()
     for class_name in ("non_metastatic", "metastatic"):
         class_images = selected_by_class[class_name]
-        if args.max_per_class is not None:
-            class_images = class_images[: args.max_per_class]
+        if max_per_class is not None:
+            class_images = class_images[:max_per_class]
         if not class_images:
             raise ValueError(
                 f"No images detected for class {class_name}. Expected class folders or filenames "
                 "with aliases such as non_metastatic/normal/negative or metastatic/tumor/positive."
             )
 
-        destination_dir = args.output / class_name
+        destination_dir = output_dir / class_name
         destination_dir.mkdir(parents=True, exist_ok=True)
         for index, source_path in enumerate(class_images):
             target = unique_target(destination_dir, source_path, index)
@@ -152,7 +249,7 @@ def main() -> None:
             rows.append(
                 {
                     "class_name": class_name,
-                    "relative_path": str(target.relative_to(args.output)),
+                    "relative_path": str(target.relative_to(output_dir)),
                     "output_path": str(target),
                     "source_path": str(source_path),
                 }
@@ -160,12 +257,38 @@ def main() -> None:
 
         print(f"{class_name}: copied {len(class_images)} images")
 
-    write_metadata(rows, args.output / "metadata.csv")
-    print(f"metadata: {args.output / 'metadata.csv'}")
+    write_metadata(rows, output_dir / "metadata.csv")
+    print(f"metadata: {output_dir / 'metadata.csv'}")
     print(f"skipped_unlabeled_images: {skipped}")
     print(f"class_counts: {dict(sorted(counts.items()))}")
 
 
+def main() -> None:
+    args = parse_args()
+    prepare_output(args.output, overwrite=args.overwrite)
+
+    if args.x_h5 is not None or args.y_h5 is not None:
+        if args.x_h5 is None or args.y_h5 is None:
+            raise ValueError("HDF5 conversion requires both --x-h5 and --y-h5.")
+        prepare_hdf5_dataset(
+            x_h5=args.x_h5,
+            y_h5=args.y_h5,
+            output_dir=args.output,
+            split_name=args.split_name,
+            hdf5_key_x=args.hdf5_key_x,
+            hdf5_key_y=args.hdf5_key_y,
+            max_per_class=args.max_per_class,
+        )
+        return
+
+    if args.source is None:
+        raise ValueError("Image-folder preparation requires --input, or use --x-h5 and --y-h5.")
+    prepare_image_folder_dataset(
+        source=args.source,
+        output_dir=args.output,
+        max_per_class=args.max_per_class,
+    )
+
+
 if __name__ == "__main__":
     main()
-

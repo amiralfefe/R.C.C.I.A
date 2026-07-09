@@ -157,7 +157,7 @@ cd projects\metastasis
 ..\..\.venv\Scripts\streamlit.exe run app.py
 ```
 
-V1 initialisee : pipeline binaire `non_metastatic` vs `metastatic`, support ResNet18 / MobileNetV3 small / EfficientNet-B0, evaluation avec accuracy, precision, recall, F1, ROC-AUC, PR-AUC, matrice de confusion, courbe ROC et courbe precision/recall. Le dataset reel PCam / PatchCamelyon n'est pas encore telecharge dans cette phase.
+V1 initialisee : pipeline binaire `non_metastatic` vs `metastatic`, support ResNet18 / MobileNetV3 small / EfficientNet-B0, evaluation avec accuracy, precision, recall, F1, ROC-AUC, PR-AUC, matrice de confusion, courbe ROC et courbe precision/recall. Le dataset reel PCam / PatchCamelyon n'est pas encore telecharge dans cette phase ; le script de preparation supporte les image-folders et les fichiers HDF5 PCam non compresses.
 
 ## Docs Globales
 

@@ -20,10 +20,13 @@ V1 initialisation :
 - support ResNet18, MobileNetV3 small et EfficientNet-B0 ;
 - evaluation avec accuracy, precision, recall, F1, ROC-AUC et PR-AUC ;
 - scripts de preparation PCam-like et split classique ;
+- conversion HDF5 PCam vers ImageFolder preparee si `h5py` est installe ;
 - app Streamlit V1 avec Grad-CAM si checkpoint disponible ;
 - tests smoke CPU rapides.
 
-Le dataset reel n'est pas encore telecharge dans cette phase.
+Le dataset reel n'a pas ete telecharge dans cette phase : Kaggle n'etait pas authentifie
+avec le token local actuel, et la source officielle PCam est disponible en HDF5 volumineux
+qu'il faut telecharger/decompresser volontairement.
 
 ## Objectif V1
 
@@ -50,9 +53,13 @@ Classes normalisees :
 | `non_metastatic` | patch sans metastase detectee dans le label du dataset |
 | `metastatic` | patch annote positif / metastatic |
 
-Le script V1 supporte les datasets deja exportes en images classees par dossiers ou
-avec des labels detectables dans les chemins/noms. Il ne convertit pas encore les
-archives HDF5 PCam directement.
+Le script V1 supporte :
+
+- les datasets deja exportes en images classees par dossiers ou avec labels detectables
+  dans les chemins/noms ;
+- les fichiers PCam HDF5 non compresses via `--x-h5` et `--y-h5`.
+
+Les archives officielles `.h5.gz` doivent etre decompressees avant conversion.
 
 ## Stack Technique
 
@@ -85,6 +92,14 @@ Commande indicative :
 ```powershell
 .\.venv\Scripts\python.exe projects\metastasis\scripts\prepare_pcam_dataset.py --input C:\VSCODE\datasets\pcam --output projects\metastasis\data\raw
 ```
+
+Conversion HDF5 PCam officielle, apres decompression des fichiers `.h5.gz` :
+
+```powershell
+.\.venv\Scripts\python.exe projects\metastasis\scripts\prepare_pcam_dataset.py --x-h5 C:\VSCODE\datasets\pcam\camelyonpatch_level_2_split_train_x.h5 --y-h5 C:\VSCODE\datasets\pcam\camelyonpatch_level_2_split_train_y.h5 --split-name train --output projects\metastasis\data\raw --max-per-class 5000
+```
+
+`--max-per-class` est optionnel mais recommande pour un premier run CPU raisonnable.
 
 Structure raw attendue :
 
@@ -169,7 +184,7 @@ Depuis la racine du repo :
 
 - Demonstrateur educatif, pas outil medical.
 - Dataset reel non encore execute dans cette phase.
-- Les scripts V1 ne convertissent pas encore directement le format HDF5 PCam.
+- Kaggle non authentifie avec le token local actuel pendant cette tentative.
+- Les fichiers PCam officiels sont volumineux et distribues en `.h5.gz`.
 - Pas de validation clinique, pas de certification, pas d'usage diagnostic.
 - Grad-CAM est une visualisation exploratoire, pas une preuve medicale.
-

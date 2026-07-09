@@ -114,6 +114,7 @@ V1 initialisee :
 - package `rccia_metastasis` ;
 - classification binaire `non_metastatic` vs `metastatic` ;
 - scripts de preparation PCam-like et split classique ;
+- conversion HDF5 PCam non compresse vers ImageFolder preparee ;
 - support ResNet18, MobileNetV3 small et EfficientNet-B0 ;
 - entrainement, evaluation, prediction CLI ;
 - evaluation avec accuracy, precision, recall, F1, ROC-AUC et PR-AUC ;
@@ -123,8 +124,8 @@ V1 initialisee :
 
 Prochaines etapes Metastasis :
 
-1. Identifier et telecharger le dataset reel PCam / PatchCamelyon ou equivalent.
-2. Ajouter un convertisseur HDF5 si la source choisie le necessite.
+1. Renouveler l'authentification Kaggle ou telecharger volontairement PCam officiel.
+2. Decompresser les fichiers `.h5.gz` si la source officielle est utilisee.
 3. Preparer `data/raw` et `data/processed`.
 4. Lancer une baseline ResNet18.
 5. Evaluer ROC-AUC, PR-AUC et courbes de seuil.

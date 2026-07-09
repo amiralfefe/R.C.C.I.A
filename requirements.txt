@@ -9,3 +9,4 @@ matplotlib>=3.9
 seaborn>=0.13
 streamlit>=1.36
 tqdm>=4.66
+h5py>=3.11
