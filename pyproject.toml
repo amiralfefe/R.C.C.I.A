@@ -9,5 +9,15 @@ requires-python = ">=3.10"
 line-length = 100
 
 [tool.pytest.ini_options]
-testpaths = ["projects/leukemia/tests", "projects/lung_colon/tests", "projects/breast/tests"]
-pythonpath = ["projects/leukemia", "projects/lung_colon", "projects/breast"]
+testpaths = [
+    "projects/leukemia/tests",
+    "projects/lung_colon/tests",
+    "projects/breast/tests",
+    "projects/metastasis/tests",
+]
+pythonpath = [
+    "projects/leukemia",
+    "projects/lung_colon",
+    "projects/breast",
+    "projects/metastasis",
+]

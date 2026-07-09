@@ -103,16 +103,32 @@ Prochaines etapes Breast :
 
 ## Phase 4 - Metastasis
 
-Statut : prevu.
+Statut : V1 initialisee.
 
-Objectif possible : detection ou classification de patches lies a des metastases sur dataset public.
+Objectif : detection ou classification de patches lies a des metastases sur dataset public,
+typiquement PCam / PatchCamelyon ou equivalent.
 
-Axes techniques :
+V1 initialisee :
 
-- patch classification ;
-- courbes ROC / AUC si pertinent ;
-- analyse des seuils ;
-- visualisation des erreurs.
+- structure `projects/metastasis` ;
+- package `rccia_metastasis` ;
+- classification binaire `non_metastatic` vs `metastatic` ;
+- scripts de preparation PCam-like et split classique ;
+- support ResNet18, MobileNetV3 small et EfficientNet-B0 ;
+- entrainement, evaluation, prediction CLI ;
+- evaluation avec accuracy, precision, recall, F1, ROC-AUC et PR-AUC ;
+- matrices de confusion, courbes ROC et precision/recall ;
+- demo Streamlit V1 avec Grad-CAM si checkpoint disponible ;
+- tests smoke CPU rapides.
+
+Prochaines etapes Metastasis :
+
+1. Identifier et telecharger le dataset reel PCam / PatchCamelyon ou equivalent.
+2. Ajouter un convertisseur HDF5 si la source choisie le necessite.
+3. Preparer `data/raw` et `data/processed`.
+4. Lancer une baseline ResNet18.
+5. Evaluer ROC-AUC, PR-AUC et courbes de seuil.
+6. Garder le discours strictement educatif, sans promesse medicale.
 
 ## Phase 5 - MultiCancer
 

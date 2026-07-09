@@ -11,7 +11,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
 | [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
 | [Breast](projects/breast/README.md) | V2.2 complete + final pack | Classification BreakHis benign/malignant avec split patient-aware, Streamlit, benchmark ResNet18 / MobileNetV3 / EfficientNet, analyse d'erreurs et docs portfolio |
-| Metastasis | prevu | Projet futur oriente detection/patch classification |
+| [Metastasis](projects/metastasis/README.md) | V1 initialized | Classification de patches `non_metastatic` vs `metastatic`, pipeline PyTorch, ROC-AUC / PR-AUC, Streamlit et Grad-CAM prepares |
 | MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
 
 ## Projet Principal Termine
@@ -61,10 +61,19 @@ R.C.C.I.A/
     |   |-- docs/
     |   |-- data/
     |   `-- outputs/
-    `-- breast/
+    |-- breast/
+    |   |-- README.md
+    |   |-- app.py
+    |   |-- rccia_breast/
+    |   |-- scripts/
+    |   |-- tests/
+    |   |-- docs/
+    |   |-- data/
+    |   `-- outputs/
+    `-- metastasis/
         |-- README.md
         |-- app.py
-        |-- rccia_breast/
+        |-- rccia_metastasis/
         |-- scripts/
         |-- tests/
         |-- docs/
@@ -141,6 +150,15 @@ Pack portfolio Breast :
 - [LinkedIn draft](projects/breast/docs/LINKEDIN_DRAFT.md)
 - [Release notes V2.1](projects/breast/docs/RELEASE_NOTES_V2_1.md)
 
+## Lancer Le Projet Metastasis
+
+```powershell
+cd projects\metastasis
+..\..\.venv\Scripts\streamlit.exe run app.py
+```
+
+V1 initialisee : pipeline binaire `non_metastatic` vs `metastatic`, support ResNet18 / MobileNetV3 small / EfficientNet-B0, evaluation avec accuracy, precision, recall, F1, ROC-AUC, PR-AUC, matrice de confusion, courbe ROC et courbe precision/recall. Le dataset reel PCam / PatchCamelyon n'est pas encore telecharge dans cette phase.
+
 ## Docs Globales
 
 - [Roadmap](docs/ROADMAP.md)
@@ -150,3 +168,5 @@ Pack portfolio Breast :
 - [Leukemia LinkedIn draft](projects/leukemia/docs/LINKEDIN_DRAFT.md)
 - [Breast V2 model comparison](projects/breast/docs/V2_MODEL_COMPARISON.md)
 - [Breast V2 error analysis](projects/breast/docs/V2_ERROR_ANALYSIS.md)
+- [Metastasis dataset guide](projects/metastasis/docs/DATASET_GUIDE.md)
+- [Metastasis metrics guide](projects/metastasis/docs/METRICS_GUIDE.md)
