@@ -103,7 +103,7 @@ Prochaines etapes Breast :
 
 ## Phase 4 - Metastasis
 
-Statut : V2 model comparison sur subset PCam.
+Statut : V2.1 error/threshold analysis sur subset PCam.
 
 Objectif : detection ou classification de patches lies a des metastases sur dataset public,
 typiquement PCam / PatchCamelyon ou equivalent.
@@ -130,15 +130,18 @@ V1 initialisee :
   ROC-AUC 0.9762 et PR-AUC 0.9780 ;
 - meilleur recall `metastatic` V2 : ResNet18, recall 0.9307 ;
 - modele le plus rapide V2 : MobileNetV3 small, 64.82 s d'entrainement ;
+- analyse V2.1 sur EfficientNet-B0 : 699 correctes sur 750 images test ;
+- V2.1 : 24 false positives et 27 false negatives au seuil 0.50 ;
+- V2.1 : analyse de seuils 0.30 / 0.40 / 0.50 / 0.60 / 0.70 ;
+- V2.1 : Grad-CAM genere localement pour les exemples exportes ;
 - tests smoke CPU rapides.
 
 Prochaines etapes Metastasis :
 
-1. Ajouter une analyse de seuil precision/recall.
-2. Ajouter une analyse des erreurs false positives / false negatives.
-3. Eventuellement elargir au train split complet si le temps CPU/GPU le permet.
-4. Preparer un pack portfolio et un tag Metastasis apres l'analyse d'erreurs.
-5. Garder le discours strictement educatif, sans promesse medicale.
+1. Preparer un pack portfolio et un tag Metastasis.
+2. Eventuellement elargir au train split complet si le temps CPU/GPU le permet.
+3. Comparer les seuils sur un autre split PCam si disponible.
+4. Garder le discours strictement educatif, sans promesse medicale.
 
 ## Phase 5 - MultiCancer
 

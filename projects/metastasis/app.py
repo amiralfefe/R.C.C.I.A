@@ -7,6 +7,7 @@ import pandas as pd
 import streamlit as st
 from PIL import Image, UnidentifiedImageError
 
+from rccia_metastasis.error_analysis import load_summary
 from rccia_metastasis.gradcam import (
     GradCAM,
     denormalize_image,
@@ -20,10 +21,17 @@ from rccia_metastasis.utils import get_device
 
 APP_DIR = Path(__file__).resolve().parent
 DEFAULT_CHECKPOINT = Path("outputs/best_model.pt")
+DEFAULT_ERROR_ANALYSIS_DIR = Path("outputs/error_analysis")
 
 
 def format_percent(value: float) -> str:
     return f"{value:.2%}"
+
+
+def format_optional_percent(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    return format_percent(float(value))
 
 
 def resolve_artifact_path(path: Path) -> Path:
@@ -55,6 +63,105 @@ def render_checkpoint_error(model_error: str | None) -> None:
     )
     if model_error:
         st.code(model_error)
+
+
+def load_error_analysis_summary(summary_path: Path) -> dict[str, Any] | None:
+    try:
+        return load_summary(summary_path)
+    except (OSError, ValueError):
+        return None
+
+
+def render_error_analysis_section() -> None:
+    st.divider()
+    st.subheader("Analyse des erreurs V2.1")
+
+    error_analysis_dir = resolve_artifact_path(DEFAULT_ERROR_ANALYSIS_DIR)
+    summary_path = error_analysis_dir / "error_summary.json"
+    threshold_path = error_analysis_dir / "threshold_analysis.csv"
+    threshold_plot_path = error_analysis_dir / "threshold_analysis.png"
+    examples_dir = error_analysis_dir / "examples"
+
+    summary = load_error_analysis_summary(summary_path)
+    if summary is None:
+        st.info("Analyse V2.1 locale non trouvee. Genere-la avec la commande ci-dessous.")
+        st.code(
+            "..\\..\\.venv\\Scripts\\python.exe scripts\\analyze_errors.py "
+            "--data-dir data\\processed "
+            "--checkpoint outputs\\model_comparison\\efficientnet_b0\\best_model.pt "
+            "--model efficientnet_b0 "
+            "--image-size 96 "
+            "--output-dir outputs\\error_analysis "
+            "--thresholds 0.30 0.40 0.50 0.60 0.70 "
+            "--max-examples 20",
+            language="powershell",
+        )
+        return
+
+    st.caption(f"Resume charge : `{summary_path}`")
+    metrics = st.columns(5)
+    metrics[0].metric("Images test", int(summary.get("total_images", 0)))
+    metrics[1].metric("Erreurs", int(summary.get("error_count", 0)))
+    metrics[2].metric("False positives", int(summary.get("false_positive_count", 0)))
+    metrics[3].metric("False negatives", int(summary.get("false_negative_count", 0)))
+    metrics[4].metric("Accuracy @0.50", format_optional_percent(summary.get("accuracy_at_0_50")))
+
+    confidence_cols = st.columns(2)
+    confidence_cols[0].metric(
+        "Confiance moyenne correctes",
+        format_optional_percent(summary.get("average_confidence_correct")),
+    )
+    confidence_cols[1].metric(
+        "Confiance moyenne erreurs",
+        format_optional_percent(summary.get("average_confidence_errors")),
+    )
+    st.caption(
+        "ROC-AUC : "
+        f"{summary.get('roc_auc', 'n/a')} | PR-AUC : {summary.get('pr_auc', 'n/a')}"
+    )
+
+    if threshold_path.exists():
+        st.markdown("**Analyse des seuils**")
+        threshold_rows = pd.read_csv(threshold_path)
+        st.dataframe(threshold_rows, hide_index=True, use_container_width=True)
+
+    if threshold_plot_path.exists():
+        st.image(str(threshold_plot_path), caption="Precision / recall / F1 selon le seuil", use_container_width=True)
+
+    exported_examples = summary.get("exported_examples") or []
+    visible_examples = []
+    for example in exported_examples:
+        image_path_value = example.get("image_path")
+        if not image_path_value:
+            continue
+        image_path = resolve_artifact_path(Path(image_path_value))
+        if not image_path.exists() and examples_dir.exists():
+            image_path = examples_dir / Path(image_path_value).name
+        if image_path.exists():
+            visible_examples.append((example, image_path))
+
+    if visible_examples:
+        st.markdown("**Exemples exportes**")
+        for example, image_path in visible_examples[:8]:
+            label = (
+                f"{example.get('kind', 'example')} - "
+                f"{example.get('true_label')} -> {example.get('predicted_label')}"
+            )
+            with st.expander(label):
+                cols = st.columns(2)
+                cols[0].image(str(image_path), caption="Image", use_container_width=True)
+                gradcam_path_value = example.get("gradcam_path")
+                gradcam_path = (
+                    resolve_artifact_path(Path(gradcam_path_value))
+                    if gradcam_path_value
+                    else None
+                )
+                if gradcam_path and not gradcam_path.exists() and examples_dir.exists():
+                    gradcam_path = examples_dir / Path(gradcam_path_value).name
+                if gradcam_path and gradcam_path.exists():
+                    cols[1].image(str(gradcam_path), caption="Grad-CAM", use_container_width=True)
+                else:
+                    cols[1].info("Grad-CAM indisponible pour cet exemple.")
 
 
 def render_app() -> None:
@@ -159,6 +266,8 @@ def render_app() -> None:
         "PR-AUC, matrice de confusion, courbe ROC et courbe precision/recall. "
         "L'analyse de seuil est prevue pour une phase suivante."
     )
+
+    render_error_analysis_section()
 
     st.subheader("Limites")
     st.write(

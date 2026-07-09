@@ -220,6 +220,49 @@ Lecture courte :
 - ces scores sont des resultats experimentaux sur subset PCam public, pas une
   validation clinique.
 
+## V2.1 - Error Analysis + ROC/Threshold Analysis
+
+La V2.1 analyse les erreurs du meilleur modele global V2, `efficientnet_b0`, et mesure
+l'impact du seuil `metastatic` sur les faux positifs et faux negatifs.
+
+Commande lancee :
+
+```powershell
+.\.venv\Scripts\python.exe projects\metastasis\scripts\analyze_errors.py --data-dir projects\metastasis\data\processed --checkpoint projects\metastasis\outputs\model_comparison\efficientnet_b0\best_model.pt --model efficientnet_b0 --image-size 96 --output-dir projects\metastasis\outputs\error_analysis --thresholds 0.30 0.40 0.50 0.60 0.70 --max-examples 20
+```
+
+Resultats au seuil 0.50 :
+
+| Metrique | Valeur |
+| --- | ---: |
+| Images test | 750 |
+| Accuracy | 0.9320 |
+| Correctes | 699 |
+| Erreurs | 51 |
+| False positives | 24 |
+| False negatives | 27 |
+| Confiance moyenne correctes | 0.9071 |
+| Confiance moyenne erreurs | 0.7107 |
+| ROC-AUC | 0.9762 |
+| PR-AUC | 0.9780 |
+
+Analyse des seuils :
+
+| Threshold | Accuracy | Precision `metastatic` | Recall `metastatic` | F1 `metastatic` | FP | FN |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 0.30 | 0.8907 | 0.8399 | **0.9653** | 0.8983 | 69 | **13** |
+| 0.40 | 0.9160 | 0.8861 | 0.9547 | 0.9191 | 46 | 17 |
+| 0.50 | **0.9320** | 0.9355 | 0.9280 | **0.9317** | 24 | 27 |
+| 0.60 | 0.9187 | 0.9460 | 0.8880 | 0.9161 | 19 | 42 |
+| 0.70 | 0.9120 | **0.9668** | 0.8533 | 0.9065 | **11** | 55 |
+
+Lecture : baisser le seuil augmente le recall `metastatic` mais produit plus de faux
+positifs ; monter le seuil reduit les faux positifs mais augmente les faux negatifs.
+Grad-CAM a ete genere localement pour les exemples exportes. Cette analyse reste un
+benchmark educatif, pas une validation clinique ni un choix de seuil medical.
+
+Voir [docs/V2_ERROR_ANALYSIS.md](docs/V2_ERROR_ANALYSIS.md).
+
 ## Stack Technique
 
 - Python
@@ -331,6 +374,7 @@ Voir [docs/METRICS_GUIDE.md](docs/METRICS_GUIDE.md).
 - [Dataset guide](docs/DATASET_GUIDE.md)
 - [Metrics guide](docs/METRICS_GUIDE.md)
 - [V2 model comparison](docs/V2_MODEL_COMPARISON.md)
+- [V2 error and threshold analysis](docs/V2_ERROR_ANALYSIS.md)
 
 ## Tests
 
