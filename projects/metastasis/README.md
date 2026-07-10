@@ -29,6 +29,28 @@ V1 real dataset run :
 Le run reel V1 utilise un subset equilibre de la validation PCam pour garder un temps CPU
 raisonnable. Les donnees, outputs et checkpoints restent locaux et ne sont pas versionnes.
 
+## Final Project Status
+
+Metastasis est complete jusqu'a la V2.2 portfolio publishing pack.
+
+- V1 : run reel PCam HDF5, baseline ResNet18, ROC-AUC et PR-AUC ;
+- V1.1 : captures Streamlit et README visuel ;
+- V2 : benchmark ResNet18 / MobileNetV3 small / EfficientNet-B0 ;
+- V2.1 : analyse d'erreurs, ROC/PR-AUC, seuils et Grad-CAM ;
+- V2.2 : pack portfolio avec resume projet, pitch entretien, brouillons LinkedIn et
+  release notes.
+
+Tag de reference : `metastasis-v2.1-threshold-analysis`.
+
+Documents portfolio :
+
+- [Project summary](docs/PROJECT_SUMMARY.md)
+- [Interview pitch](docs/INTERVIEW_PITCH.md)
+- [LinkedIn draft](docs/LINKEDIN_DRAFT.md)
+- [Release notes V2.1](docs/RELEASE_NOTES_V2_1.md)
+- [V2 model comparison](docs/V2_MODEL_COMPARISON.md)
+- [V2 error and threshold analysis](docs/V2_ERROR_ANALYSIS.md)
+
 ## Objectif V1
 
 Preparer une baseline propre pour un dataset de detection de metastases sur patches
@@ -373,6 +395,10 @@ Voir [docs/METRICS_GUIDE.md](docs/METRICS_GUIDE.md).
 
 - [Dataset guide](docs/DATASET_GUIDE.md)
 - [Metrics guide](docs/METRICS_GUIDE.md)
+- [Project summary](docs/PROJECT_SUMMARY.md)
+- [Interview pitch](docs/INTERVIEW_PITCH.md)
+- [LinkedIn draft](docs/LINKEDIN_DRAFT.md)
+- [Release notes V2.1](docs/RELEASE_NOTES_V2_1.md)
 - [V2 model comparison](docs/V2_MODEL_COMPARISON.md)
 - [V2 error and threshold analysis](docs/V2_ERROR_ANALYSIS.md)
 

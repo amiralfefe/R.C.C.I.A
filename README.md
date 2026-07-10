@@ -11,7 +11,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
 | [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
 | [Breast](projects/breast/README.md) | V2.2 complete + final pack | Classification BreakHis benign/malignant avec split patient-aware, Streamlit, benchmark ResNet18 / MobileNetV3 / EfficientNet, analyse d'erreurs et docs portfolio |
-| [Metastasis](projects/metastasis/README.md) | V2.1 error/threshold analysis | Classification de patches `non_metastatic` vs `metastatic`, pipeline PyTorch, ROC-AUC / PR-AUC, Streamlit, Grad-CAM, benchmark multi-modeles et analyse seuils/erreurs |
+| [Metastasis](projects/metastasis/README.md) | V2.2 complete + final pack | Classification de patches `non_metastatic` vs `metastatic`, pipeline PyTorch, ROC-AUC / PR-AUC, Streamlit, Grad-CAM, benchmark multi-modeles, analyse seuils/erreurs et docs portfolio |
 | MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
 
 ## Projet Principal Termine
@@ -163,6 +163,13 @@ V2 : benchmark ResNet18 / MobileNetV3 small / EfficientNet-B0 sur le meme subset
 
 V2.1 : analyse d'erreurs et de seuils sur EfficientNet-B0. Au seuil 0.50 : **699 correctes / 750**, **24 false positives**, **27 false negatives**, ROC-AUC **0.9762**, PR-AUC **0.9780**. L'analyse montre le compromis seuil bas / meilleur recall `metastatic` versus seuil haut / moins de faux positifs. Voir [projects/metastasis/docs/V2_ERROR_ANALYSIS.md](projects/metastasis/docs/V2_ERROR_ANALYSIS.md).
 
+Pack portfolio Metastasis :
+
+- [Project summary](projects/metastasis/docs/PROJECT_SUMMARY.md)
+- [Interview pitch](projects/metastasis/docs/INTERVIEW_PITCH.md)
+- [LinkedIn draft](projects/metastasis/docs/LINKEDIN_DRAFT.md)
+- [Release notes V2.1](projects/metastasis/docs/RELEASE_NOTES_V2_1.md)
+
 ## Docs Globales
 
 - [Roadmap](docs/ROADMAP.md)
@@ -174,5 +181,8 @@ V2.1 : analyse d'erreurs et de seuils sur EfficientNet-B0. Au seuil 0.50 : **699
 - [Breast V2 error analysis](projects/breast/docs/V2_ERROR_ANALYSIS.md)
 - [Metastasis dataset guide](projects/metastasis/docs/DATASET_GUIDE.md)
 - [Metastasis metrics guide](projects/metastasis/docs/METRICS_GUIDE.md)
+- [Metastasis project summary](projects/metastasis/docs/PROJECT_SUMMARY.md)
+- [Metastasis interview pitch](projects/metastasis/docs/INTERVIEW_PITCH.md)
+- [Metastasis LinkedIn draft](projects/metastasis/docs/LINKEDIN_DRAFT.md)
 - [Metastasis V2 model comparison](projects/metastasis/docs/V2_MODEL_COMPARISON.md)
 - [Metastasis V2 error analysis](projects/metastasis/docs/V2_ERROR_ANALYSIS.md)

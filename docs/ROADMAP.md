@@ -103,7 +103,7 @@ Prochaines etapes Breast :
 
 ## Phase 4 - Metastasis
 
-Statut : V2.1 error/threshold analysis sur subset PCam.
+Statut : termine, V2.2 portfolio publishing pack.
 
 Objectif : detection ou classification de patches lies a des metastases sur dataset public,
 typiquement PCam / PatchCamelyon ou equivalent.
@@ -134,18 +134,27 @@ V1 initialisee :
 - V2.1 : 24 false positives et 27 false negatives au seuil 0.50 ;
 - V2.1 : analyse de seuils 0.30 / 0.40 / 0.50 / 0.60 / 0.70 ;
 - V2.1 : Grad-CAM genere localement pour les exemples exportes ;
+- pack final portfolio : resume projet, pitch entretien, brouillons LinkedIn et release notes ;
 - tests smoke CPU rapides.
+
+Version de reference :
+
+```text
+metastasis-v2.1-threshold-analysis
+```
 
 Prochaines etapes Metastasis :
 
-1. Preparer un pack portfolio et un tag Metastasis.
-2. Eventuellement elargir au train split complet si le temps CPU/GPU le permet.
-3. Comparer les seuils sur un autre split PCam si disponible.
-4. Garder le discours strictement educatif, sans promesse medicale.
+1. Stopper les ajouts majeurs sur Metastasis sauf correction documentaire.
+2. Utiliser Metastasis pour CV, LinkedIn et portfolio.
+3. Eventuellement elargir au train split complet si le temps CPU/GPU le permet.
+4. Comparer les seuils sur un autre split PCam si disponible.
+5. Demarrer la synthese transversale MultiCancer.
+6. Garder le discours strictement educatif, sans promesse medicale.
 
 ## Phase 5 - MultiCancer
 
-Statut : prevu.
+Statut : prochaine phase prevue.
 
 Objectif : creer une vue transversale du portfolio R.C.C.I.A.
 
