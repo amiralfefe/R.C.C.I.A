@@ -154,17 +154,34 @@ Prochaines etapes Metastasis :
 
 ## Phase 5 - MultiCancer
 
-Statut : prochaine phase prevue.
+Statut : V0 scope, architecture et initialisation legere terminee.
 
-Objectif : creer une vue transversale du portfolio R.C.C.I.A.
+Objectif : creer un hub transversal qui route explicitement vers les pipelines
+specialises sans fusionner les datasets ni presenter un modele medical universel.
 
-Livrables possibles :
+Livrables V0 :
 
-- tableau comparatif des sous-projets ;
-- harmonisation des docs ;
-- page portfolio unique ;
-- presentation courte recruteur ;
-- synthese des limites communes.
+- scope et decisions techniques documentes ;
+- architecture cible par adaptateurs ;
+- matrice comparative Leukemia / LungColon / Breast / Metastasis ;
+- registre de metadonnees independant des checkpoints ;
+- schemas communs `ProjectMetadata` et `PredictionResult` ;
+- page Streamlit V0 sans modele, dataset ou prediction ;
+- tests rapides du registre et des schemas.
+
+Prochaine phase : MultiCancer V1 Hub Streamlit.
+
+Objectifs V1 :
+
+1. Creer un adaptateur par projet specialise.
+2. Permettre une selection explicite de la tache.
+3. Charger paresseusement un seul modele a la fois.
+4. Normaliser classe, confiance, probabilites et Grad-CAM optionnel.
+5. Gerer proprement les checkpoints absents et images invalides.
+6. Afficher les limites methodologiques avec chaque prediction.
+
+Leukemia, LungColon, Breast et Metastasis restent termines. Leurs pipelines ne doivent
+pas etre modifies par MultiCancer sauf correction d'interface ciblee et testee.
 
 ## Regles Permanentes
 

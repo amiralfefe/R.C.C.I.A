@@ -14,10 +14,12 @@ testpaths = [
     "projects/lung_colon/tests",
     "projects/breast/tests",
     "projects/metastasis/tests",
+    "projects/multicancer/tests",
 ]
 pythonpath = [
     "projects/leukemia",
     "projects/lung_colon",
     "projects/breast",
     "projects/metastasis",
+    "projects/multicancer",
 ]

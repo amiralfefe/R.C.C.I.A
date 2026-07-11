@@ -12,7 +12,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
 | [Breast](projects/breast/README.md) | V2.2 complete + final pack | Classification BreakHis benign/malignant avec split patient-aware, Streamlit, benchmark ResNet18 / MobileNetV3 / EfficientNet, analyse d'erreurs et docs portfolio |
 | [Metastasis](projects/metastasis/README.md) | V2.2 complete + final pack | Classification de patches `non_metastatic` vs `metastatic`, pipeline PyTorch, ROC-AUC / PR-AUC, Streamlit, Grad-CAM, benchmark multi-modeles, analyse seuils/erreurs et docs portfolio |
-| MultiCancer | prevu | Synthese multi-projets et comparaison transversale |
+| [MultiCancer](projects/multicancer/README.md) | V0 scope + architecture | Hub final avec registre commun et futur routage explicite vers les pipelines specialises ; aucun modele universel |
 
 ## Projet Principal Termine
 
@@ -41,6 +41,10 @@ R.C.C.I.A/
 |-- docs/
 |   |-- ROADMAP.md
 |   |-- PORTFOLIO_OVERVIEW.md
+|   |-- MULTICANCER_SCOPE.md
+|   |-- MULTICANCER_ARCHITECTURE.md
+|   |-- MULTICANCER_PROJECT_MATRIX.md
+|   |-- MULTICANCER_DECISIONS.md
 |   `-- assets/
 `-- projects/
     |-- leukemia/
@@ -70,15 +74,21 @@ R.C.C.I.A/
     |   |-- docs/
     |   |-- data/
     |   `-- outputs/
-    `-- metastasis/
+    |-- metastasis/
+    |   |-- README.md
+    |   |-- app.py
+    |   |-- rccia_metastasis/
+    |   |-- scripts/
+    |   |-- tests/
+    |   |-- docs/
+    |   |-- data/
+    |   `-- outputs/
+    `-- multicancer/
         |-- README.md
         |-- app.py
-        |-- rccia_metastasis/
-        |-- scripts/
+        |-- multicancer/
         |-- tests/
-        |-- docs/
-        |-- data/
-        `-- outputs/
+        `-- docs/
 ```
 
 ## Installation Globale
@@ -170,10 +180,29 @@ Pack portfolio Metastasis :
 - [LinkedIn draft](projects/metastasis/docs/LINKEDIN_DRAFT.md)
 - [Release notes V2.1](projects/metastasis/docs/RELEASE_NOTES_V2_1.md)
 
+## Lancer Le Hub MultiCancer V0
+
+```powershell
+.\.venv\Scripts\streamlit.exe run projects\multicancer\app.py
+```
+
+MultiCancer est le hub final du monorepo. Sa V0 expose le scope, l'architecture, le
+registre des quatre projets et leurs differences methodologiques. Elle ne charge aucun
+checkpoint, ne realise aucune prediction et ne cherche pas a construire un modele
+medical universel.
+
+Le prochain jalon est MultiCancer V1 : selection explicite d'un projet, adaptateurs
+specialises, chargement paresseux d'un seul modele et format de prediction commun.
+
 ## Docs Globales
 
 - [Roadmap](docs/ROADMAP.md)
 - [Portfolio overview](docs/PORTFOLIO_OVERVIEW.md)
+- [MultiCancer scope](docs/MULTICANCER_SCOPE.md)
+- [MultiCancer architecture](docs/MULTICANCER_ARCHITECTURE.md)
+- [MultiCancer project matrix](docs/MULTICANCER_PROJECT_MATRIX.md)
+- [MultiCancer technical decisions](docs/MULTICANCER_DECISIONS.md)
+- [MultiCancer V1 roadmap](projects/multicancer/docs/ROADMAP_V1.md)
 - [Leukemia project summary](projects/leukemia/docs/PROJECT_SUMMARY.md)
 - [Leukemia interview pitch](projects/leukemia/docs/INTERVIEW_PITCH.md)
 - [Leukemia LinkedIn draft](projects/leukemia/docs/LINKEDIN_DRAFT.md)
