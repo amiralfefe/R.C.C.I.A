@@ -2,26 +2,37 @@
 
 ## Phase 1 - Registry Et Schemas
 
-- finaliser les metadonnees communes ;
-- definir le contrat des adaptateurs ;
-- valider les avertissements et limites par projet.
+Statut : termine en V1.1.
+
+- metadonnees communes finalisees ;
+- contrat `BaseAdapter` defini ;
+- schemas checkpoint, prediction et explication ajoutes ;
+- erreurs communes et limites par projet validees.
 
 ## Phase 2 - Specialized Adapters
 
-- creer un adaptateur Leukemia ;
-- creer un adaptateur LungColon ;
-- creer un adaptateur Breast ;
-- creer un adaptateur Metastasis ;
+- Leukemia : integre en V1.1 ;
+- Breast : prochaine integration ;
+- Metastasis : troisieme integration ;
+- LungColon : quatrieme integration ;
 - reutiliser les fonctions existantes sans modifier les pipelines source.
+
+LungColon est volontairement dernier car son adaptateur devra distinguer la
+classification 5 classes et le mode binaire `benign` / `malignant`.
 
 ## Phase 3 - Streamlit Hub
 
-- selection explicite du projet ;
-- affichage des metadonnees avant inference ;
+Statut : parcours Leukemia termine, autres adaptateurs en attente.
+
+- selection explicite des quatre fiches ;
+- metadonnees affichees avant inference ;
 - chargement paresseux d'un seul modele ;
-- page utilisable meme si certains checkpoints sont absents.
+- page utilisable si le checkpoint est absent ;
+- dechargement lors du changement de projet.
 
 ## Phase 4 - Predictions Normalisees
+
+Statut : contrat et parcours Leukemia termines.
 
 - classe predite ;
 - confiance ;
@@ -30,6 +41,8 @@
 - avertissements et disclaimer.
 
 ## Phase 5 - Explainability
+
+Statut : Grad-CAM Leukemia integre, autres projets en attente.
 
 - integrer Grad-CAM lorsque l'adaptateur le supporte ;
 - afficher un message propre lorsqu'il est indisponible ;

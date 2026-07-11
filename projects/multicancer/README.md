@@ -9,11 +9,28 @@ specialises.
 
 ## Statut
 
-**V0 - Scope, architecture et initialisation legere.**
+**V1.1 - Common Adapter Contract + Leukemia End-to-End Integration.**
 
-La V0 fournit la documentation, un registre de metadonnees, des schemas communs
-conceptuels, une page Streamlit informative et des tests rapides. Elle ne charge aucun
-checkpoint, ne lit aucun dataset et ne realise aucune prediction.
+La V0 a defini le scope, le registre et l'architecture. La V1.1 ajoute le contrat commun,
+un gestionnaire garantissant un seul modele en memoire et le premier adaptateur reel :
+Leukemia.
+
+## V1.1 - Leukemia Adapter
+
+Fonctionnalites :
+
+- selection explicite du projet ;
+- detection du checkpoint Leukemia local sans le versionner ;
+- chargement paresseux et idempotent ;
+- prediction normalisee `normal` / `leukemia_blast` ;
+- probabilites par classe ;
+- Grad-CAM optionnel reutilisant le pipeline existant ;
+- erreurs controlees pour checkpoint absent/incompatible et image invalide ;
+- dechargement du modele lors d'un changement de projet ;
+- limites et disclaimers global/Leukemia visibles.
+
+Breast, Metastasis et LungColon restent visibles mais ne chargent aucun modele dans
+cette phase.
 
 ## Projets Regroupes
 
@@ -39,10 +56,10 @@ Hub Streamlit
   -> resultat commun + Grad-CAM optionnel + limites
 ```
 
-Les adaptateurs seront ajoutes en V1. Un seul modele sera charge a la fois et l'absence
-de checkpoint sera geree sans bloquer le hub.
+Leukemia est integre. Les adaptateurs suivants conserveront le meme contrat et un seul
+modele sera charge a la fois. L'absence de checkpoint ne bloque pas le hub.
 
-## Lancer La Page V0
+## Lancer Le Hub V1.1
 
 Depuis la racine du monorepo :
 
@@ -50,7 +67,8 @@ Depuis la racine du monorepo :
 .\.venv\Scripts\streamlit.exe run projects\multicancer\app.py
 ```
 
-La page fonctionne sans outputs, checkpoint ou dataset local.
+La page reste consultable sans outputs, checkpoint ou dataset local. Une prediction
+Leukemia necessite le checkpoint local `projects/leukemia/outputs/best_model.pt`.
 
 ## Documentation
 
@@ -59,14 +77,14 @@ La page fonctionne sans outputs, checkpoint ou dataset local.
 - [Project matrix](../../docs/MULTICANCER_PROJECT_MATRIX.md)
 - [Technical decisions](../../docs/MULTICANCER_DECISIONS.md)
 - [V1 roadmap](docs/ROADMAP_V1.md)
+- [Leukemia adapter V1.1](docs/V1_LEUKEMIA_ADAPTER.md)
 
 ## Roadmap Courte
 
-1. stabiliser le registre et les schemas ;
-2. implementer un adaptateur par projet ;
-3. integrer la selection et le chargement paresseux dans Streamlit ;
-4. normaliser predictions, probabilites et explications ;
-5. tester les erreurs et checkpoints absents.
+1. Leukemia : integre en V1.1 ;
+2. Breast : prochain adaptateur ;
+3. Metastasis : adapter ROC, probabilite positive et seuils ;
+4. LungColon : integrer en dernier les modes 5 classes et binaire.
 
 MultiCancer n'est pas une IA de diagnostic multi-cancer. C'est une plateforme portfolio
 qui expose plusieurs pipelines experimentaux, leurs performances et leurs limites.

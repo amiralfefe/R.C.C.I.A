@@ -154,7 +154,7 @@ Prochaines etapes Metastasis :
 
 ## Phase 5 - MultiCancer
 
-Statut : V0 scope, architecture et initialisation legere terminee.
+Statut : V1.1 contrat commun et adaptateur Leukemia termines.
 
 Objectif : creer un hub transversal qui route explicitement vers les pipelines
 specialises sans fusionner les datasets ni presenter un modele medical universel.
@@ -169,15 +169,26 @@ Livrables V0 :
 - page Streamlit V0 sans modele, dataset ou prediction ;
 - tests rapides du registre et des schemas.
 
-Prochaine phase : MultiCancer V1 Hub Streamlit.
+Livrables V1.1 :
+
+- contrat commun `BaseAdapter` ;
+- schemas checkpoint, prediction et explication ;
+- gestionnaire garantissant un seul modele actif ;
+- adaptateur Leukemia reutilisant prediction et Grad-CAM existants ;
+- chargement paresseux du checkpoint local ;
+- prediction Streamlit normalisee et gestion des erreurs ;
+- dechargement lors du changement de projet ;
+- tests sans dependance au vrai checkpoint.
+
+Prochaine phase : adaptateur Breast.
 
 Objectifs V1 :
 
-1. Creer un adaptateur par projet specialise.
-2. Permettre une selection explicite de la tache.
-3. Charger paresseusement un seul modele a la fois.
-4. Normaliser classe, confiance, probabilites et Grad-CAM optionnel.
-5. Gerer proprement les checkpoints absents et images invalides.
+1. Leukemia : integre.
+2. Breast : prochaine integration.
+3. Metastasis : troisieme integration.
+4. LungColon : dernier, avec modes 5 classes et binaire.
+5. Conserver le chargement paresseux d'un seul modele.
 6. Afficher les limites methodologiques avec chaque prediction.
 
 Leukemia, LungColon, Breast et Metastasis restent termines. Leurs pipelines ne doivent

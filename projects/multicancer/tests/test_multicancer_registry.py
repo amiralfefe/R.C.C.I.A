@@ -28,6 +28,7 @@ def test_required_metadata_is_present() -> None:
         assert project.task
         assert project.methodological_note
         assert project.primary_metrics
+        assert project.limitations
 
 
 def test_registry_has_no_absolute_windows_path() -> None:
@@ -47,6 +48,7 @@ def test_prediction_result_can_be_instantiated() -> None:
     result = PredictionResult(
         project_id="leukemia",
         predicted_class="normal",
+        predicted_index=0,
         confidence=0.75,
         class_probabilities={"normal": 0.75, "leukemia_blast": 0.25},
         model_name="resnet18",
@@ -58,10 +60,45 @@ def test_prediction_result_can_be_instantiated() -> None:
     assert result.disclaimer
 
 
-def test_v0_streamlit_app_renders_without_checkpoint() -> None:
+def test_registry_marks_only_leukemia_as_integrated() -> None:
+    integrated = {project.project_id for project in PROJECTS if project.integrated}
+    prediction_enabled = {
+        project.project_id for project in PROJECTS if project.supports_prediction
+    }
+
+    assert integrated == {"leukemia"}
+    assert prediction_enabled == {"leukemia"}
+
+
+def test_streamlit_app_renders_without_loading_checkpoint() -> None:
     app_path = Path(__file__).resolve().parents[1] / "app.py"
     app = AppTest.from_file(str(app_path)).run(timeout=20)
 
     assert not app.exception
     assert len(app.dataframe) == 1
     assert len(app.selectbox) == 1
+
+
+def test_streamlit_non_integrated_project_stays_informational() -> None:
+    app_path = Path(__file__).resolve().parents[1] / "app.py"
+    app = AppTest.from_file(str(app_path)).run(timeout=20)
+
+    app.selectbox[0].select("breast").run(timeout=20)
+
+    assert not app.exception
+    assert any("adaptateur Breast est prevu" in item.value for item in app.info)
+    assert len(app.get("file_uploader")) == 0
+
+
+def test_streamlit_rejects_invalid_image_without_crashing() -> None:
+    app_path = Path(__file__).resolve().parents[1] / "app.py"
+    app = AppTest.from_file(str(app_path)).run(timeout=20)
+
+    app.get("file_uploader")[0].upload(
+        "invalid.png",
+        b"not-an-image",
+        "image/png",
+    ).run(timeout=20)
+
+    assert not app.exception
+    assert any("ne contient pas une image" in item.value for item in app.error)

@@ -1,9 +1,10 @@
-"""Minimal common schemas for the MultiCancer V0 registry and future adapters."""
+"""Common metadata, checkpoint, prediction, and explanation schemas."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping
+from pathlib import Path
+from typing import Any, Literal, Mapping
 
 
 GLOBAL_DISCLAIMER = (
@@ -23,18 +24,37 @@ class ProjectMetadata:
     dataset: str
     classes: tuple[str, ...]
     image_size: str
+    model_name: str
     status: str
+    adapter_status: str
+    integrated: bool
+    supports_prediction: bool
     supports_gradcam: bool
     primary_metrics: tuple[str, ...]
+    limitations: tuple[str, ...]
     methodological_note: str
+    disclaimer: str = GLOBAL_DISCLAIMER
+
+
+CheckpointState = Literal["available", "missing", "incompatible", "unchecked"]
+
+
+@dataclass(frozen=True)
+class CheckpointStatus:
+    """Normalized state of a local, non-versioned model checkpoint."""
+
+    status: CheckpointState
+    checkpoint_path: Path | None
+    message: str
 
 
 @dataclass(frozen=True)
 class PredictionResult:
-    """Conceptual normalized output returned by a future V1 adapter."""
+    """Normalized prediction returned by a specialized adapter."""
 
     project_id: str
     predicted_class: str
+    predicted_index: int
     confidence: float
     class_probabilities: Mapping[str, float]
     model_name: str
@@ -42,3 +62,16 @@ class PredictionResult:
     explanation_path: str | None = None
     warnings: tuple[str, ...] = ()
     disclaimer: str = GLOBAL_DISCLAIMER
+    raw_metadata: Mapping[str, Any] | None = None
+
+
+@dataclass(frozen=True)
+class ExplanationResult:
+    """Optional visual explanation returned without persisting uploaded images."""
+
+    available: bool
+    image: object | None
+    image_path: str | None
+    class_index: int | None
+    class_name: str | None
+    message: str
