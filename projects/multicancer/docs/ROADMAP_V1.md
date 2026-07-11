@@ -12,8 +12,8 @@ Statut : termine en V1.1.
 ## Phase 2 - Specialized Adapters
 
 - Leukemia : integre en V1.1 ;
-- Breast : prochaine integration ;
-- Metastasis : troisieme integration ;
+- Breast : integre en V1.2 ;
+- Metastasis : prochaine integration ;
 - LungColon : quatrieme integration ;
 - reutiliser les fonctions existantes sans modifier les pipelines source.
 
@@ -22,7 +22,7 @@ classification 5 classes et le mode binaire `benign` / `malignant`.
 
 ## Phase 3 - Streamlit Hub
 
-Statut : parcours Leukemia termine, autres adaptateurs en attente.
+Statut : parcours Leukemia et Breast termines, Metastasis et LungColon en attente.
 
 - selection explicite des quatre fiches ;
 - metadonnees affichees avant inference ;
@@ -32,7 +32,7 @@ Statut : parcours Leukemia termine, autres adaptateurs en attente.
 
 ## Phase 4 - Predictions Normalisees
 
-Statut : contrat et parcours Leukemia termines.
+Statut : contrat et parcours Leukemia/Breast termines.
 
 - classe predite ;
 - confiance ;
@@ -42,7 +42,7 @@ Statut : contrat et parcours Leukemia termines.
 
 ## Phase 5 - Explainability
 
-Statut : Grad-CAM Leukemia integre, autres projets en attente.
+Statut : Grad-CAM Leukemia et Breast integre, autres projets en attente.
 
 - integrer Grad-CAM lorsque l'adaptateur le supporte ;
 - afficher un message propre lorsqu'il est indisponible ;

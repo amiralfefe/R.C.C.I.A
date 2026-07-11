@@ -23,7 +23,7 @@ class ProjectMetadata:
     task: str
     dataset: str
     classes: tuple[str, ...]
-    image_size: str
+    image_size: int
     model_name: str
     status: str
     adapter_status: str

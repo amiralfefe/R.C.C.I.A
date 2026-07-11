@@ -31,6 +31,11 @@ SESSION_PROJECT_KEY = "multicancer_selected_project"
 SESSION_PREDICTION_KEY = "multicancer_last_prediction"
 SESSION_IMAGE_KEY = "multicancer_last_image"
 
+UPLOAD_LABELS = {
+    "leukemia": "Image de cellule sanguine",
+    "breast": "Image histopathologique mammaire",
+}
+
 
 def project_rows() -> list[dict[str, str]]:
     """Build display rows without loading models, checkpoints, or datasets."""
@@ -44,7 +49,7 @@ def project_rows() -> list[dict[str, str]]:
                 "Dataset": values["dataset"],
                 "Task": values["task"],
                 "Classes": ", ".join(values["classes"]),
-                "Input": values["image_size"],
+                "Input": f"{values['image_size']}x{values['image_size']}",
                 "Adapter": values["adapter_status"],
                 "Prediction": "yes" if values["supports_prediction"] else "planned",
                 "Grad-CAM": "yes" if values["supports_gradcam"] else "no",
@@ -106,7 +111,7 @@ def render_project_metadata(project_id: str) -> None:
     summary = st.columns(4)
     summary[0].metric("Projet", project.display_name)
     summary[1].metric("Modele", project.model_name)
-    summary[2].metric("Resolution", project.image_size)
+    summary[2].metric("Resolution", f"{project.image_size}x{project.image_size}")
     summary[3].metric("Adaptateur", project.adapter_status)
 
     st.write(f"**Tache :** {project.task}")
@@ -118,6 +123,38 @@ def render_project_metadata(project_id: str) -> None:
     for limitation in project.limitations:
         st.write(f"- {limitation}")
     st.warning(project.methodological_note)
+
+
+def render_breast_methodology() -> None:
+    st.subheader("Contexte methodologique Breast")
+    context = st.columns(4)
+    context[0].metric("Patients detectes", "81")
+    context[1].metric("Overlap patient", "0")
+    context[2].metric("Images test", "1 481")
+    context[3].metric("Erreurs V2.1", "130")
+    st.write(
+        "Le split est patient-aware : les images d'un meme patient ne sont pas reparties "
+        "entre train, validation et test. Les resultats restent issus d'un dataset public."
+    )
+    magnification_rows = pd.DataFrame(
+        [
+            {"grossissement": "40X", "accuracy": 0.8757},
+            {"grossissement": "100X", "accuracy": 0.9194},
+            {"grossissement": "200X", "accuracy": 0.9467},
+            {"grossissement": "400X", "accuracy": 0.9063},
+        ]
+    )
+    st.dataframe(magnification_rows, hide_index=True, width="stretch")
+    st.caption(
+        "V2.1 : 88 faux positifs benign -> malignant, 42 faux negatifs malignant -> "
+        "benign. Confiance moyenne : 0.9700 sur les predictions correctes et 0.8464 "
+        "sur les erreurs."
+    )
+    st.warning(
+        "Le patient 14-16184CD concentre 76 erreurs. Cette observation illustre une "
+        "variabilite patient et ne constitue pas une conclusion clinique. Les scores ne "
+        "sont pas directement comparables a ceux des autres projets."
+    )
 
 
 def render_prediction(result: PredictionResult) -> None:
@@ -140,15 +177,16 @@ def render_prediction(result: PredictionResult) -> None:
         st.caption(warning)
 
 
-def render_leukemia_flow(manager: ModelManager) -> None:
+def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
+    project = get_project(project_id)
     try:
-        adapter = manager.activate("leukemia")
+        adapter = manager.activate(project_id)
     except AdapterError as exc:
         st.error(str(exc))
         return
 
     checkpoint = adapter.checkpoint_status()
-    st.subheader("Checkpoint Leukemia")
+    st.subheader(f"Checkpoint {project.display_name}")
     if checkpoint.status == "available":
         st.success(checkpoint.message)
     elif checkpoint.status == "missing":
@@ -163,22 +201,24 @@ def render_leukemia_flow(manager: ModelManager) -> None:
         st.caption(f"Chemin local attendu : `{display_path}`")
 
     if st.button(
-        "Charger le modele Leukemia",
+        f"Charger le modele {project.display_name}",
         disabled=checkpoint.status != "available" or adapter.is_loaded,
         type="secondary",
+        key=f"load_{project_id}",
     ):
         try:
             adapter.load()
         except (CheckpointMissingError, CheckpointIncompatibleError) as exc:
             st.error(str(exc))
         else:
-            st.success("Modele Leukemia charge a la demande.")
+            st.success(f"Modele {project.display_name} charge a la demande.")
 
     st.caption(f"Modele en memoire : {'oui' if adapter.is_loaded else 'non'}")
     uploaded_file = st.file_uploader(
-        "Image de cellule sanguine",
+        UPLOAD_LABELS.get(project_id, "Image a analyser"),
         type=["png", "jpg", "jpeg"],
         help="Le fichier reste en memoire pendant la session et n'est pas enregistre.",
+        key=f"upload_{project_id}",
     )
 
     uploaded_image: Image.Image | None = None
@@ -191,7 +231,12 @@ def render_leukemia_flow(manager: ModelManager) -> None:
         else:
             st.image(uploaded_image, caption="Image chargee", width=420)
 
-    if st.button("Analyser l'image", type="primary", disabled=uploaded_image is None):
+    if st.button(
+        "Analyser l'image",
+        type="primary",
+        disabled=uploaded_image is None,
+        key=f"analyze_{project_id}",
+    ):
         if uploaded_image is None:
             st.error("Chargez une image PNG ou JPEG valide avant l'analyse.")
         else:
@@ -203,12 +248,16 @@ def render_leukemia_flow(manager: ModelManager) -> None:
             else:
                 st.session_state[SESSION_PREDICTION_KEY] = prediction
                 st.session_state[SESSION_IMAGE_KEY] = uploaded_image.copy()
-                st.success("Prediction Leukemia terminee.")
+                st.success(f"Prediction {project.display_name} terminee.")
 
     prediction = st.session_state.get(SESSION_PREDICTION_KEY)
-    if isinstance(prediction, PredictionResult) and prediction.project_id == "leukemia":
+    if isinstance(prediction, PredictionResult) and prediction.project_id == project_id:
         render_prediction(prediction)
-        show_gradcam = st.toggle("Afficher Grad-CAM", value=False)
+        show_gradcam = st.toggle(
+            "Afficher Grad-CAM",
+            value=False,
+            key=f"gradcam_{project_id}",
+        )
         if show_gradcam:
             explanation_image = st.session_state.get(SESSION_IMAGE_KEY)
             if not isinstance(explanation_image, Image.Image):
@@ -233,7 +282,7 @@ def render_leukemia_flow(manager: ModelManager) -> None:
 def render_app() -> None:
     st.set_page_config(page_title="R.C.C.I.A MultiCancer", layout="wide")
     st.title("R.C.C.I.A MultiCancer")
-    st.caption("Hub de pipelines specialises - V1.1 Leukemia Adapter")
+    st.caption("Hub de pipelines specialises - V1.2 Leukemia + Breast Adapters")
     st.error(
         "Demonstrateur educatif / portfolio uniquement. Aucune validation clinique, "
         "aucun diagnostic medical et aucune recommandation medicale."
@@ -250,6 +299,13 @@ def render_app() -> None:
 
     synchronize_project(manager, selected_project_id)
     selected_project = get_project(selected_project_id)
+    if selected_project.integrated and selected_project.supports_prediction:
+        try:
+            manager.activate(selected_project_id)
+        except AdapterError as exc:
+            st.error(str(exc))
+    else:
+        manager.unload_current()
 
     with st.sidebar:
         st.caption(f"Integration : {selected_project.adapter_status}")
@@ -265,11 +321,12 @@ def render_app() -> None:
     st.subheader("Portefeuille specialise")
     st.dataframe(project_rows(), hide_index=True, width="stretch")
     render_project_metadata(selected_project_id)
+    if selected_project_id == "breast":
+        render_breast_methodology()
 
     if selected_project.integrated and selected_project.supports_prediction:
-        render_leukemia_flow(manager)
+        render_integrated_flow(manager, selected_project_id)
     else:
-        manager.unload_current()
         st.info(
             f"L'adaptateur {selected_project.display_name} est prevu dans une prochaine phase. "
             "Aucun checkpoint n'est charge pour ce projet."

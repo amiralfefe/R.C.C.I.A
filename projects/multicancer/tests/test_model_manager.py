@@ -59,11 +59,19 @@ def test_only_one_adapter_is_active_and_previous_is_unloaded() -> None:
     first.load()
 
     second = manager.activate("second")
+    second.load()
 
     assert manager.current_adapter is second
     assert manager.active_project_id == "second"
     assert created["first"].unload_calls == 1
     assert not created["first"].is_loaded
+
+    first_again = manager.activate("first")
+
+    assert manager.current_adapter is first_again
+    assert manager.active_project_id == "first"
+    assert created["second"].unload_calls == 1
+    assert not created["second"].is_loaded
 
 
 def test_reactivating_same_project_reuses_adapter() -> None:

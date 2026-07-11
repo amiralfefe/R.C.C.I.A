@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 
 from .adapters.base import BaseAdapter
+from .adapters.breast_adapter import BreastAdapter
 from .adapters.leukemia_adapter import LeukemiaAdapter
 from .exceptions import AdapterError
 
@@ -16,7 +17,10 @@ class ModelManager:
     """Own one adapter and unload it before any project switch."""
 
     def __init__(self, factories: Mapping[str, AdapterFactory] | None = None) -> None:
-        default_factories: Mapping[str, AdapterFactory] = {"leukemia": LeukemiaAdapter}
+        default_factories: Mapping[str, AdapterFactory] = {
+            "leukemia": LeukemiaAdapter,
+            "breast": BreastAdapter,
+        }
         self._factories = dict(default_factories if factories is None else factories)
         self._current_adapter: BaseAdapter | None = None
         self._active_project_id: str | None = None
