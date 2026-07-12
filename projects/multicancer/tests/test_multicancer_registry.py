@@ -60,14 +60,15 @@ def test_prediction_result_can_be_instantiated() -> None:
     assert result.disclaimer
 
 
-def test_registry_marks_only_leukemia_and_breast_as_integrated() -> None:
+def test_registry_marks_three_adapters_as_integrated() -> None:
     integrated = {project.project_id for project in PROJECTS if project.integrated}
     prediction_enabled = {
         project.project_id for project in PROJECTS if project.supports_prediction
     }
 
-    assert integrated == {"leukemia", "breast"}
-    assert prediction_enabled == {"leukemia", "breast"}
+    assert integrated == {"leukemia", "breast", "metastasis"}
+    assert prediction_enabled == {"leukemia", "breast", "metastasis"}
+    assert not get_project("lung_colon").integrated
 
 
 def test_streamlit_app_renders_without_loading_checkpoint() -> None:
@@ -83,10 +84,10 @@ def test_streamlit_non_integrated_project_stays_informational() -> None:
     app_path = Path(__file__).resolve().parents[1] / "app.py"
     app = AppTest.from_file(str(app_path)).run(timeout=20)
 
-    app.selectbox[0].select("metastasis").run(timeout=20)
+    app.selectbox[0].select("lung_colon").run(timeout=20)
 
     assert not app.exception
-    assert any("adaptateur Metastasis est prevu" in item.value for item in app.info)
+    assert any("adaptateur Lung + Colon est prevu" in item.value for item in app.info)
     assert len(app.get("file_uploader")) == 0
 
 
@@ -100,6 +101,20 @@ def test_streamlit_breast_context_and_upload_are_available() -> None:
     assert any("Contexte methodologique Breast" in item.value for item in app.subheader)
     assert len(app.get("file_uploader")) == 1
     assert any("patient 14-16184CD" in item.value for item in app.warning)
+
+
+def test_streamlit_metastasis_reference_table_is_visible_before_prediction() -> None:
+    app_path = Path(__file__).resolve().parents[1] / "app.py"
+    app = AppTest.from_file(str(app_path)).run(timeout=20)
+
+    app.selectbox[0].select("metastasis").run(timeout=20)
+
+    assert not app.exception
+    assert any("Contexte methodologique Metastasis" in item.value for item in app.subheader)
+    assert any("Exploration du seuil de decision" in item.value for item in app.subheader)
+    assert len(app.slider) == 0
+    assert len(app.get("file_uploader")) == 1
+    assert any("Aucun seuil n'est recommande" in item.value for item in app.warning)
 
 
 def test_streamlit_rejects_invalid_image_without_crashing() -> None:

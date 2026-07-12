@@ -7,6 +7,7 @@ from collections.abc import Callable, Mapping
 from .adapters.base import BaseAdapter
 from .adapters.breast_adapter import BreastAdapter
 from .adapters.leukemia_adapter import LeukemiaAdapter
+from .adapters.metastasis_adapter import MetastasisAdapter
 from .exceptions import AdapterError
 
 
@@ -20,6 +21,7 @@ class ModelManager:
         default_factories: Mapping[str, AdapterFactory] = {
             "leukemia": LeukemiaAdapter,
             "breast": BreastAdapter,
+            "metastasis": MetastasisAdapter,
         }
         self._factories = dict(default_factories if factories is None else factories)
         self._current_adapter: BaseAdapter | None = None

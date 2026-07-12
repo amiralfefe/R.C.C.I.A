@@ -8,7 +8,9 @@ from .schemas import (
     ExplanationResult,
     PredictionResult,
     ProjectMetadata,
+    ThresholdDecision,
 )
+from .thresholds import apply_binary_threshold
 
 __all__ = [
     "GLOBAL_DISCLAIMER",
@@ -19,5 +21,7 @@ __all__ = [
     "PROJECTS",
     "PredictionResult",
     "ProjectMetadata",
+    "ThresholdDecision",
+    "apply_binary_threshold",
     "get_project",
 ]

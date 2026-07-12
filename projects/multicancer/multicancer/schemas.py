@@ -30,6 +30,7 @@ class ProjectMetadata:
     integrated: bool
     supports_prediction: bool
     supports_gradcam: bool
+    supports_threshold_exploration: bool
     primary_metrics: tuple[str, ...]
     limitations: tuple[str, ...]
     methodological_note: str
@@ -75,3 +76,17 @@ class ExplanationResult:
     class_index: int | None
     class_name: str | None
     message: str
+
+
+@dataclass(frozen=True)
+class ThresholdDecision:
+    """Exploratory binary decision derived from an immutable model prediction."""
+
+    positive_class: str
+    negative_class: str
+    positive_probability: float
+    threshold: float
+    thresholded_class: str
+    is_threshold_override: bool
+    default_threshold: float
+    educational_warning: str

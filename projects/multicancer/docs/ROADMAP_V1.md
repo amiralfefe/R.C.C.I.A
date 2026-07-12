@@ -13,8 +13,8 @@ Statut : termine en V1.1.
 
 - Leukemia : integre en V1.1 ;
 - Breast : integre en V1.2 ;
-- Metastasis : prochaine integration ;
-- LungColon : quatrieme integration ;
+- Metastasis : integre en V1.3 ;
+- LungColon : prochaine integration ;
 - reutiliser les fonctions existantes sans modifier les pipelines source.
 
 LungColon est volontairement dernier car son adaptateur devra distinguer la
@@ -22,7 +22,7 @@ classification 5 classes et le mode binaire `benign` / `malignant`.
 
 ## Phase 3 - Streamlit Hub
 
-Statut : parcours Leukemia et Breast termines, Metastasis et LungColon en attente.
+Statut : parcours Leukemia, Breast et Metastasis termines, LungColon en attente.
 
 - selection explicite des quatre fiches ;
 - metadonnees affichees avant inference ;
@@ -32,7 +32,7 @@ Statut : parcours Leukemia et Breast termines, Metastasis et LungColon en attent
 
 ## Phase 4 - Predictions Normalisees
 
-Statut : contrat et parcours Leukemia/Breast termines.
+Statut : contrat et parcours Leukemia/Breast/Metastasis termines.
 
 - classe predite ;
 - confiance ;
@@ -42,7 +42,9 @@ Statut : contrat et parcours Leukemia/Breast termines.
 
 ## Phase 5 - Explainability
 
-Statut : Grad-CAM Leukemia et Breast integre, autres projets en attente.
+Statut : Grad-CAM Leukemia, Breast et Metastasis integre, LungColon en attente.
+
+La V1.3 ajoute une couche `ThresholdDecision` pure et distincte de l'argmax du modele.
 
 - integrer Grad-CAM lorsque l'adaptateur le supporte ;
 - afficher un message propre lorsqu'il est indisponible ;

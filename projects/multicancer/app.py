@@ -24,6 +24,7 @@ from multicancer.exceptions import (  # noqa: E402
 from multicancer.model_manager import ModelManager  # noqa: E402
 from multicancer.registry import PROJECTS, get_project  # noqa: E402
 from multicancer.schemas import GLOBAL_DISCLAIMER, PredictionResult  # noqa: E402
+from multicancer.thresholds import apply_binary_threshold  # noqa: E402
 
 
 SESSION_MANAGER_KEY = "multicancer_model_manager"
@@ -34,7 +35,56 @@ SESSION_IMAGE_KEY = "multicancer_last_image"
 UPLOAD_LABELS = {
     "leukemia": "Image de cellule sanguine",
     "breast": "Image histopathologique mammaire",
+    "metastasis": "Patch histopathologique PCam",
 }
+
+METASTASIS_THRESHOLD_ROWS = [
+    {
+        "threshold": 0.30,
+        "accuracy": 0.8907,
+        "precision_metastatic": 0.8399,
+        "recall_metastatic": 0.9653,
+        "f1_metastatic": 0.8983,
+        "FP": 69,
+        "FN": 13,
+    },
+    {
+        "threshold": 0.40,
+        "accuracy": 0.9160,
+        "precision_metastatic": 0.8861,
+        "recall_metastatic": 0.9547,
+        "f1_metastatic": 0.9191,
+        "FP": 46,
+        "FN": 17,
+    },
+    {
+        "threshold": 0.50,
+        "accuracy": 0.9320,
+        "precision_metastatic": 0.9355,
+        "recall_metastatic": 0.9280,
+        "f1_metastatic": 0.9317,
+        "FP": 24,
+        "FN": 27,
+    },
+    {
+        "threshold": 0.60,
+        "accuracy": 0.9187,
+        "precision_metastatic": 0.9460,
+        "recall_metastatic": 0.8880,
+        "f1_metastatic": 0.9161,
+        "FP": 19,
+        "FN": 42,
+    },
+    {
+        "threshold": 0.70,
+        "accuracy": 0.9120,
+        "precision_metastatic": 0.9668,
+        "recall_metastatic": 0.8533,
+        "f1_metastatic": 0.9065,
+        "FP": 11,
+        "FN": 55,
+    },
+]
 
 
 def project_rows() -> list[dict[str, str]]:
@@ -53,6 +103,9 @@ def project_rows() -> list[dict[str, str]]:
                 "Adapter": values["adapter_status"],
                 "Prediction": "yes" if values["supports_prediction"] else "planned",
                 "Grad-CAM": "yes" if values["supports_gradcam"] else "no",
+                "Threshold": (
+                    "exploratory" if values["supports_threshold_exploration"] else "no"
+                ),
             }
         )
     return rows
@@ -157,6 +210,79 @@ def render_breast_methodology() -> None:
     )
 
 
+def render_metastasis_methodology() -> None:
+    st.subheader("Contexte methodologique Metastasis")
+    context = st.columns(4)
+    context[0].metric("Images test", "750")
+    context[1].metric("Accuracy", "0.9320")
+    context[2].metric("ROC-AUC", "0.9762")
+    context[3].metric("PR-AUC", "0.9780")
+    st.write(
+        "Le benchmark utilise un subset PCam equilibre de 5 000 patches, dont 750 dans "
+        "le test set local. Les metriques dependent de ce split et du protocole local."
+    )
+    st.caption(
+        "Au seuil 0.50 : 699 predictions correctes, 51 erreurs, 24 faux positifs et "
+        "27 faux negatifs. Confiance moyenne : 0.9071 sur les predictions correctes et "
+        "0.7107 sur les erreurs."
+    )
+
+
+def render_threshold_exploration(prediction: PredictionResult | None) -> None:
+    st.subheader("Exploration du seuil de decision")
+    st.warning(
+        "Aucun seuil n'est recommande medicalement. Cette interface illustre uniquement "
+        "l'impact d'un seuil sur les faux positifs et les faux negatifs dans un benchmark "
+        "educatif."
+    )
+
+    if prediction is None:
+        st.info(
+            "Lancez une prediction Metastasis pour explorer une decision derivee des "
+            "probabilites brutes. Le tableau de reference reste consultable ci-dessous."
+        )
+    else:
+        threshold = st.slider(
+            "Seuil exploratoire metastatic",
+            min_value=0.30,
+            max_value=0.70,
+            value=0.50,
+            step=0.01,
+            key="metastasis_threshold",
+        )
+        decision = apply_binary_threshold(
+            prediction,
+            positive_class="metastatic",
+            threshold=threshold,
+        )
+        original = st.columns(2)
+        original[0].metric("Argmax original", prediction.predicted_class)
+        original[1].metric(
+            "Probabilite metastatic",
+            f"{decision.positive_probability:.2%}",
+        )
+        derived = st.columns(2)
+        derived[0].metric("Seuil applique", f"{decision.threshold:.2f}")
+        derived[1].metric("Decision au seuil", decision.thresholded_class)
+        if decision.is_threshold_override:
+            st.info("Override exploratoire actif : le seuil par defaut est 0.50.")
+        else:
+            st.caption("Seuil par defaut 0.50 utilise.")
+        st.write(
+            "L'argmax et la decision au seuil peuvent differer. Le modele n'est pas "
+            "recalcule : seule une regle distincte est appliquee a la probabilite "
+            "`metastatic`."
+        )
+        st.caption(decision.educational_warning)
+
+    st.markdown("**Resultats agreges V2.1 sur les 750 images test locales**")
+    st.dataframe(pd.DataFrame(METASTASIS_THRESHOLD_ROWS), hide_index=True, width="stretch")
+    st.caption(
+        "Seuil plus bas : recall metastatic generalement plus eleve et davantage de faux "
+        "positifs. Seuil plus haut : moins de faux positifs et davantage de faux negatifs."
+    )
+
+
 def render_prediction(result: PredictionResult) -> None:
     st.subheader("Prediction normalisee")
     prediction_columns = st.columns(4)
@@ -250,9 +376,20 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
                 st.session_state[SESSION_IMAGE_KEY] = uploaded_image.copy()
                 st.success(f"Prediction {project.display_name} terminee.")
 
-    prediction = st.session_state.get(SESSION_PREDICTION_KEY)
-    if isinstance(prediction, PredictionResult) and prediction.project_id == project_id:
+    stored_prediction = st.session_state.get(SESSION_PREDICTION_KEY)
+    prediction = (
+        stored_prediction
+        if isinstance(stored_prediction, PredictionResult)
+        and stored_prediction.project_id == project_id
+        else None
+    )
+    if prediction is not None:
         render_prediction(prediction)
+
+    if project_id == "metastasis":
+        render_threshold_exploration(prediction)
+
+    if prediction is not None:
         show_gradcam = st.toggle(
             "Afficher Grad-CAM",
             value=False,
@@ -282,7 +419,7 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
 def render_app() -> None:
     st.set_page_config(page_title="R.C.C.I.A MultiCancer", layout="wide")
     st.title("R.C.C.I.A MultiCancer")
-    st.caption("Hub de pipelines specialises - V1.2 Leukemia + Breast Adapters")
+    st.caption("Hub de pipelines specialises - V1.3 Metastasis + Threshold Decision Layer")
     st.error(
         "Demonstrateur educatif / portfolio uniquement. Aucune validation clinique, "
         "aucun diagnostic medical et aucune recommandation medicale."
@@ -323,6 +460,8 @@ def render_app() -> None:
     render_project_metadata(selected_project_id)
     if selected_project_id == "breast":
         render_breast_methodology()
+    elif selected_project_id == "metastasis":
+        render_metastasis_methodology()
 
     if selected_project.integrated and selected_project.supports_prediction:
         render_integrated_flow(manager, selected_project_id)

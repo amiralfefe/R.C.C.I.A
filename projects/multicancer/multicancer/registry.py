@@ -20,6 +20,7 @@ PROJECTS: tuple[ProjectMetadata, ...] = (
         integrated=True,
         supports_prediction=True,
         supports_gradcam=True,
+        supports_threshold_exploration=False,
         primary_metrics=(
             "accuracy=0.9169",
             "f1_normal=0.8702",
@@ -56,6 +57,7 @@ PROJECTS: tuple[ProjectMetadata, ...] = (
         integrated=False,
         supports_prediction=False,
         supports_gradcam=True,
+        supports_threshold_exploration=False,
         primary_metrics=("accuracy=0.9992", "macro_f1=0.9992", "train_time"),
         limitations=(
             "Very high scores on a relatively easy public benchmark.",
@@ -81,6 +83,7 @@ PROJECTS: tuple[ProjectMetadata, ...] = (
         integrated=True,
         supports_prediction=True,
         supports_gradcam=True,
+        supports_threshold_exploration=False,
         primary_metrics=(
             "accuracy=0.9122",
             "macro_f1=0.9004",
@@ -106,10 +109,11 @@ PROJECTS: tuple[ProjectMetadata, ...] = (
         image_size=96,
         model_name="efficientnet_b0",
         status="complete",
-        adapter_status="planned",
-        integrated=False,
-        supports_prediction=False,
+        adapter_status="integrated",
+        integrated=True,
+        supports_prediction=True,
         supports_gradcam=True,
+        supports_threshold_exploration=True,
         primary_metrics=(
             "accuracy=0.9320",
             "roc_auc=0.9762",
@@ -118,6 +122,7 @@ PROJECTS: tuple[ProjectMetadata, ...] = (
         limitations=(
             "Benchmark uses a balanced 5,000-patch subset rather than the full corpus.",
             "Threshold trade-offs are educational, not medical decision thresholds.",
+            "No external validation or medically validated decision threshold.",
         ),
         methodological_note=(
             "Balanced 5,000-patch subset; threshold trade-offs are educational and not "

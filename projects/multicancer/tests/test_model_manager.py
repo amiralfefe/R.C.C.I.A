@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import pytest
 from PIL import Image
 
 from multicancer.adapters.base import BaseAdapter
+from multicancer.adapters.breast_adapter import BreastAdapter
+from multicancer.adapters.leukemia_adapter import LeukemiaAdapter
+from multicancer.adapters.metastasis_adapter import MetastasisAdapter
 from multicancer.exceptions import AdapterError
 from multicancer.model_manager import ModelManager
 from multicancer.registry import get_project
@@ -113,3 +117,54 @@ def test_unload_current_is_idempotent() -> None:
 
     assert adapter.unload_calls == 1
     assert manager.current_adapter is None
+
+
+def test_default_manager_activates_all_integrated_adapters() -> None:
+    manager = ModelManager()
+
+    leukemia = manager.activate("leukemia")
+    breast = manager.activate("breast")
+    metastasis = manager.activate("metastasis")
+
+    assert isinstance(leukemia, LeukemiaAdapter)
+    assert isinstance(breast, BreastAdapter)
+    assert isinstance(metastasis, MetastasisAdapter)
+    assert manager.current_adapter is metastasis
+    assert manager.active_project_id == "metastasis"
+
+
+@pytest.mark.parametrize(
+    ("first_project", "second_project"),
+    [
+        ("breast", "metastasis"),
+        ("leukemia", "metastasis"),
+        ("metastasis", "breast"),
+    ],
+)
+def test_integrated_project_switch_unloads_previous_model(
+    first_project: str,
+    second_project: str,
+) -> None:
+    adapters = {
+        project_id: FakeAdapter(project_id)
+        for project_id in ("leukemia", "breast", "metastasis")
+    }
+    manager = ModelManager(
+        factories={
+            project_id: (lambda project_id=project_id: adapters[project_id])
+            for project_id in adapters
+        }
+    )
+
+    first = manager.activate(first_project)
+    first.load()
+    second = manager.activate(second_project)
+
+    assert adapters[first_project].unload_calls == 1
+    assert not adapters[first_project].is_loaded
+    assert sum(adapter.is_loaded for adapter in adapters.values()) == 0
+
+    second.load()
+
+    assert manager.active_project_id == second_project
+    assert sum(adapter.is_loaded for adapter in adapters.values()) == 1

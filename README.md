@@ -12,7 +12,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
 | [Breast](projects/breast/README.md) | V2.2 complete + final pack | Classification BreakHis benign/malignant avec split patient-aware, Streamlit, benchmark ResNet18 / MobileNetV3 / EfficientNet, analyse d'erreurs et docs portfolio |
 | [Metastasis](projects/metastasis/README.md) | V2.2 complete + final pack | Classification de patches `non_metastatic` vs `metastatic`, pipeline PyTorch, ROC-AUC / PR-AUC, Streamlit, Grad-CAM, benchmark multi-modeles, analyse seuils/erreurs et docs portfolio |
-| [MultiCancer](projects/multicancer/README.md) | V1.2 Leukemia + Breast | Hub final avec contrat commun, lazy loading et parcours specialises Leukemia/Breast ; aucun modele universel |
+| [MultiCancer](projects/multicancer/README.md) | V1.3 + Metastasis | Hub avec Leukemia/Breast/Metastasis, lazy loading et seuil exploratoire separe de l'inference |
 
 ## Projet Principal Termine
 
@@ -180,17 +180,17 @@ Pack portfolio Metastasis :
 - [LinkedIn draft](projects/metastasis/docs/LINKEDIN_DRAFT.md)
 - [Release notes V2.1](projects/metastasis/docs/RELEASE_NOTES_V2_1.md)
 
-## Lancer Le Hub MultiCancer V1.2
+## Lancer Le Hub MultiCancer V1.3
 
 ```powershell
 .\.venv\Scripts\streamlit.exe run projects\multicancer\app.py
 ```
 
-MultiCancer est le hub final du monorepo. Sa V1.2 integre Leukemia et Breast avec un
-contrat commun, des checkpoints locaux charges a la demande, des predictions normalisees
-et Grad-CAM. Metastasis et LungColon restent visibles sans chargement de modele.
+MultiCancer est le hub final du monorepo. Sa V1.3 integre Leukemia, Breast et Metastasis
+avec chargement paresseux, predictions normalisees et Grad-CAM. Metastasis ajoute une
+decision exploratoire par seuil sans modifier l'argmax ni les probabilites du modele.
 
-Le prochain jalon est l'adaptateur Metastasis. Le hub continue de router explicitement vers
+Le prochain jalon est l'adaptateur LungColon. Le hub continue de router explicitement vers
 des pipelines specialises et ne construit pas de modele medical universel.
 
 ## Docs Globales
@@ -204,6 +204,7 @@ des pipelines specialises et ne construit pas de modele medical universel.
 - [MultiCancer V1 roadmap](projects/multicancer/docs/ROADMAP_V1.md)
 - [MultiCancer V1.1 Leukemia adapter](projects/multicancer/docs/V1_LEUKEMIA_ADAPTER.md)
 - [MultiCancer V1.2 Breast adapter](projects/multicancer/docs/V1_BREAST_ADAPTER.md)
+- [MultiCancer V1.3 Metastasis adapter](projects/multicancer/docs/V1_METASTASIS_ADAPTER.md)
 - [Leukemia project summary](projects/leukemia/docs/PROJECT_SUMMARY.md)
 - [Leukemia interview pitch](projects/leukemia/docs/INTERVIEW_PITCH.md)
 - [Leukemia LinkedIn draft](projects/leukemia/docs/LINKEDIN_DRAFT.md)

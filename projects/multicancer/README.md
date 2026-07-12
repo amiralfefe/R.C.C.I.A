@@ -9,11 +9,12 @@ specialises.
 
 ## Statut
 
-**V1.2 - Leukemia + Breast Adapters.**
+**V1.3 - Leukemia + Breast + Metastasis Adapters.**
 
 La V0 a defini le scope, le registre et l'architecture. La V1.1 ajoute le contrat commun,
 un gestionnaire garantissant un seul modele en memoire et le premier adaptateur reel :
 Leukemia. La V1.2 ajoute Breast avec le meme contrat et un contexte patient-aware visible.
+La V1.3 ajoute Metastasis et une couche de decision par seuil separee de l'inference.
 
 ## V1.1 - Leukemia Adapter
 
@@ -46,6 +47,21 @@ Fonctionnalites :
 
 Metastasis et LungColon restent visibles mais ne chargent aucun modele dans cette phase.
 
+## V1.3 - Metastasis Adapter
+
+Fonctionnalites :
+
+- checkpoint EfficientNet-B0 local et preprocessing `96x96` ;
+- prediction `non_metastatic` / `metastatic` par argmax ;
+- probabilites brutes et Grad-CAM ;
+- ROC-AUC, PR-AUC et resultats FP/FN documentes ;
+- `ThresholdDecision` distinct du `PredictionResult` ;
+- slider exploratoire `0.30` a `0.70` sans nouvelle inference ;
+- argmax original toujours affiche ;
+- aucun seuil medical recommande.
+
+LungColon reste visible mais ne charge aucun modele dans cette phase.
+
 ## Projets Regroupes
 
 - Leukemia : cellules sanguines, `normal` vs `leukemia_blast` ;
@@ -70,10 +86,10 @@ Hub Streamlit
   -> resultat commun + Grad-CAM optionnel + limites
 ```
 
-Leukemia et Breast sont integres avec un socle Torchvision commun. Un seul modele est
+Leukemia, Breast et Metastasis sont integres avec un socle Torchvision commun. Un seul modele est
 charge a la fois et l'absence d'un checkpoint ne bloque pas le hub.
 
-## Lancer Le Hub V1.2
+## Lancer Le Hub V1.3
 
 Depuis la racine du monorepo :
 
@@ -93,13 +109,14 @@ necessitent les checkpoints locaux des projets selectionnes.
 - [V1 roadmap](docs/ROADMAP_V1.md)
 - [Leukemia adapter V1.1](docs/V1_LEUKEMIA_ADAPTER.md)
 - [Breast adapter V1.2](docs/V1_BREAST_ADAPTER.md)
+- [Metastasis adapter V1.3](docs/V1_METASTASIS_ADAPTER.md)
 
 ## Roadmap Courte
 
 1. Leukemia : integre en V1.1 ;
 2. Breast : integre en V1.2 ;
-3. Metastasis : prochain adaptateur, avec ROC, probabilite positive et seuils ;
-4. LungColon : integrer en dernier les modes 5 classes et binaire.
+3. Metastasis : integre en V1.3 avec ROC, probabilite positive et seuils ;
+4. LungColon : prochain adaptateur, avec selection des modes 5 classes et binaire.
 
 MultiCancer n'est pas une IA de diagnostic multi-cancer. C'est une plateforme portfolio
 qui expose plusieurs pipelines experimentaux, leurs performances et leurs limites.
