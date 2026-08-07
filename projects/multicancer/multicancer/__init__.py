@@ -4,6 +4,7 @@ from .model_manager import ModelManager
 from .registry import PROJECT_REGISTRY, PROJECTS, get_project
 from .schemas import (
     GLOBAL_DISCLAIMER,
+    AdapterModeMetadata,
     CheckpointStatus,
     ExplanationResult,
     PredictionResult,
@@ -14,6 +15,7 @@ from .thresholds import apply_binary_threshold
 
 __all__ = [
     "GLOBAL_DISCLAIMER",
+    "AdapterModeMetadata",
     "CheckpointStatus",
     "ExplanationResult",
     "ModelManager",

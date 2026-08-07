@@ -154,7 +154,7 @@ Prochaines etapes Metastasis :
 
 ## Phase 5 - MultiCancer
 
-Statut : V1.3 adaptateurs Leukemia, Breast et Metastasis termines.
+Statut : V1.4 complete, quatre adaptateurs specialises integres.
 
 Objectif : creer un hub transversal qui route explicitement vers les pipelines
 specialises sans fusionner les datasets ni presenter un modele medical universel.
@@ -198,14 +198,21 @@ Livrables V1.3 :
 - tableau ROC/PR-AUC et FP/FN documente ;
 - tests Metastasis et seuils sans dependance au vrai checkpoint.
 
-Prochaine phase : adaptateur LungColon.
+Livrables V1.4 :
+
+- adaptateur LungColon avec modes multiclass et binary explicites ;
+- checkpoints EfficientNet-B0 et ResNet18 strictement separes ;
+- cinq ou deux probabilites selon le mode actif ;
+- unload et nettoyage de session lors d'une bascule ;
+- Grad-CAM par mode et limites LC25000 visibles ;
+- aucun chargement simultane des deux modeles.
 
 Objectifs V1 :
 
 1. Leukemia : integre.
 2. Breast : integre.
 3. Metastasis : integre.
-4. LungColon : prochain, avec modes 5 classes et binaire.
+4. LungColon : integre, avec modes 5 classes et binaire explicites.
 5. Conserver le chargement paresseux d'un seul modele.
 6. Afficher les limites methodologiques avec chaque prediction.
 

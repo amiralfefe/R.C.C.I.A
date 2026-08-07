@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import asdict
 from pathlib import Path
 
+from PIL import Image
+
 from multicancer.registry import PROJECT_REGISTRY, PROJECTS, get_project
 from multicancer.schemas import PredictionResult
 from streamlit.testing.v1 import AppTest
@@ -60,15 +62,17 @@ def test_prediction_result_can_be_instantiated() -> None:
     assert result.disclaimer
 
 
-def test_registry_marks_three_adapters_as_integrated() -> None:
+def test_registry_marks_four_adapters_as_integrated() -> None:
     integrated = {project.project_id for project in PROJECTS if project.integrated}
     prediction_enabled = {
         project.project_id for project in PROJECTS if project.supports_prediction
     }
 
-    assert integrated == {"leukemia", "breast", "metastasis"}
-    assert prediction_enabled == {"leukemia", "breast", "metastasis"}
-    assert not get_project("lung_colon").integrated
+    assert integrated == EXPECTED_PROJECT_IDS
+    assert prediction_enabled == EXPECTED_PROJECT_IDS
+    lung_colon = get_project("lung_colon")
+    assert lung_colon.supports_modes
+    assert lung_colon.modes == ("multiclass", "binary")
 
 
 def test_streamlit_app_renders_without_loading_checkpoint() -> None:
@@ -80,15 +84,52 @@ def test_streamlit_app_renders_without_loading_checkpoint() -> None:
     assert len(app.selectbox) == 1
 
 
-def test_streamlit_non_integrated_project_stays_informational() -> None:
+def test_streamlit_lung_colon_requires_explicit_mode() -> None:
     app_path = Path(__file__).resolve().parents[1] / "app.py"
     app = AppTest.from_file(str(app_path)).run(timeout=20)
 
     app.selectbox[0].select("lung_colon").run(timeout=20)
 
     assert not app.exception
-    assert any("adaptateur Lung + Colon est prevu" in item.value for item in app.info)
-    assert len(app.get("file_uploader")) == 0
+    assert not app.exception
+    assert len(app.radio) == 1
+    assert app.radio[0].value == "multiclass"
+    assert len(app.get("file_uploader")) == 1
+    assert any("aucun mode n'est deduit" in item.value for item in app.caption)
+
+
+def test_streamlit_lung_colon_mode_switch_clears_previous_result() -> None:
+    app_path = Path(__file__).resolve().parents[1] / "app.py"
+    app = AppTest.from_file(str(app_path)).run(timeout=20)
+    app.selectbox[0].select("lung_colon").run(timeout=20)
+    app.session_state["multicancer_last_prediction"] = PredictionResult(
+        project_id="lung_colon",
+        predicted_class="colon_benign",
+        predicted_index=1,
+        confidence=0.9,
+        class_probabilities={
+            "colon_adenocarcinoma": 0.02,
+            "colon_benign": 0.90,
+            "lung_adenocarcinoma": 0.02,
+            "lung_benign": 0.04,
+            "lung_squamous_cell_carcinoma": 0.02,
+        },
+        model_name="efficientnet_b0",
+        image_size=224,
+        raw_metadata={"mode_id": "multiclass"},
+    )
+    app.session_state["multicancer_last_image"] = Image.new("RGB", (16, 16))
+    app.session_state["gradcam_lung_colon"] = True
+
+    app.radio[0].set_value("binary").run(timeout=20)
+
+    assert not app.exception
+    assert "multicancer_last_prediction" not in app.session_state
+    assert "multicancer_last_image" not in app.session_state
+    assert "gradcam_lung_colon" not in app.session_state
+    manager = app.session_state["multicancer_model_manager"]
+    assert manager.current_adapter.current_mode == "binary"
+    assert manager.current_adapter.loaded_mode is None
 
 
 def test_streamlit_breast_context_and_upload_are_available() -> None:

@@ -31,10 +31,28 @@ class ProjectMetadata:
     supports_prediction: bool
     supports_gradcam: bool
     supports_threshold_exploration: bool
+    supports_modes: bool
+    modes: tuple[str, ...]
     primary_metrics: tuple[str, ...]
     limitations: tuple[str, ...]
     methodological_note: str
     disclaimer: str = GLOBAL_DISCLAIMER
+
+
+@dataclass(frozen=True)
+class AdapterModeMetadata:
+    """Checkpoint-independent configuration for one explicit adapter mode."""
+
+    mode_id: str
+    display_name: str
+    classes: tuple[str, ...]
+    model_name: str
+    image_size: int
+    task: str
+    checkpoint_description: str
+    primary_metrics: tuple[str, ...]
+    limitations: tuple[str, ...]
+    supports_gradcam: bool
 
 
 CheckpointState = Literal["available", "missing", "incompatible", "unchecked"]

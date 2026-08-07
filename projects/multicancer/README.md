@@ -9,12 +9,13 @@ specialises.
 
 ## Statut
 
-**V1.3 - Leukemia + Breast + Metastasis Adapters.**
+**V1.4 - quatre adaptateurs specialises integres.**
 
 La V0 a defini le scope, le registre et l'architecture. La V1.1 ajoute le contrat commun,
 un gestionnaire garantissant un seul modele en memoire et le premier adaptateur reel :
 Leukemia. La V1.2 ajoute Breast avec le meme contrat et un contexte patient-aware visible.
 La V1.3 ajoute Metastasis et une couche de decision par seuil separee de l'inference.
+La V1.4 termine MultiCancer V1 avec LungColon et ses modes multiclass/binary explicites.
 
 ## V1.1 - Leukemia Adapter
 
@@ -62,6 +63,18 @@ Fonctionnalites :
 
 LungColon reste visible mais ne charge aucun modele dans cette phase.
 
+## V1.4 - LungColon Adapter
+
+Fonctionnalites :
+
+- choix explicite entre cinq classes et `benign` / `malignant` ;
+- EfficientNet-B0 multiclass et ResNet18 binaire avec checkpoints distincts ;
+- cinq ou deux probabilites selon le mode actif ;
+- aucune detection automatique et aucune derivation binaire depuis le multiclass ;
+- dechargement obligatoire avant toute bascule de mode ;
+- nettoyage de la prediction, de l'upload et de Grad-CAM lors d'une bascule ;
+- limites LC25000 et prudence sur l'accuracy binaire locale parfaite.
+
 ## Projets Regroupes
 
 - Leukemia : cellules sanguines, `normal` vs `leukemia_blast` ;
@@ -86,10 +99,11 @@ Hub Streamlit
   -> resultat commun + Grad-CAM optionnel + limites
 ```
 
-Leukemia, Breast et Metastasis sont integres avec un socle Torchvision commun. Un seul modele est
-charge a la fois et l'absence d'un checkpoint ne bloque pas le hub.
+Les quatre projets sont integres avec un socle Torchvision commun. Un seul modele est
+charge a la fois, y compris entre les deux modes LungColon, et l'absence d'un checkpoint
+ne bloque pas le hub.
 
-## Lancer Le Hub V1.3
+## Lancer Le Hub V1.4
 
 Depuis la racine du monorepo :
 
@@ -110,13 +124,14 @@ necessitent les checkpoints locaux des projets selectionnes.
 - [Leukemia adapter V1.1](docs/V1_LEUKEMIA_ADAPTER.md)
 - [Breast adapter V1.2](docs/V1_BREAST_ADAPTER.md)
 - [Metastasis adapter V1.3](docs/V1_METASTASIS_ADAPTER.md)
+- [LungColon adapter V1.4](docs/V1_LUNG_COLON_ADAPTER.md)
 
 ## Roadmap Courte
 
 1. Leukemia : integre en V1.1 ;
 2. Breast : integre en V1.2 ;
 3. Metastasis : integre en V1.3 avec ROC, probabilite positive et seuils ;
-4. LungColon : prochain adaptateur, avec selection des modes 5 classes et binaire.
+4. LungColon : integre en V1.4 avec modes 5 classes et binaire explicites.
 
 MultiCancer n'est pas une IA de diagnostic multi-cancer. C'est une plateforme portfolio
 qui expose plusieurs pipelines experimentaux, leurs performances et leurs limites.

@@ -22,8 +22,13 @@ from multicancer.exceptions import (  # noqa: E402
     InvalidImageError,
 )
 from multicancer.model_manager import ModelManager  # noqa: E402
+from multicancer.adapters.lung_colon_adapter import LungColonAdapter  # noqa: E402
 from multicancer.registry import PROJECTS, get_project  # noqa: E402
-from multicancer.schemas import GLOBAL_DISCLAIMER, PredictionResult  # noqa: E402
+from multicancer.schemas import (  # noqa: E402
+    GLOBAL_DISCLAIMER,
+    AdapterModeMetadata,
+    PredictionResult,
+)
 from multicancer.thresholds import apply_binary_threshold  # noqa: E402
 
 
@@ -31,11 +36,13 @@ SESSION_MANAGER_KEY = "multicancer_model_manager"
 SESSION_PROJECT_KEY = "multicancer_selected_project"
 SESSION_PREDICTION_KEY = "multicancer_last_prediction"
 SESSION_IMAGE_KEY = "multicancer_last_image"
+SESSION_LUNG_COLON_MODE_KEY = "multicancer_lung_colon_mode"
 
 UPLOAD_LABELS = {
     "leukemia": "Image de cellule sanguine",
     "breast": "Image histopathologique mammaire",
     "metastasis": "Patch histopathologique PCam",
+    "lung_colon": "Image histopathologique LC25000",
 }
 
 METASTASIS_THRESHOLD_ROWS = [
@@ -106,6 +113,7 @@ def project_rows() -> list[dict[str, str]]:
                 "Threshold": (
                     "exploratory" if values["supports_threshold_exploration"] else "no"
                 ),
+                "Modes": ", ".join(values["modes"]) or "single",
             }
         )
     return rows
@@ -149,6 +157,8 @@ def get_model_manager() -> ModelManager:
 def clear_prediction_state() -> None:
     st.session_state.pop(SESSION_PREDICTION_KEY, None)
     st.session_state.pop(SESSION_IMAGE_KEY, None)
+    st.session_state.pop("upload_lung_colon", None)
+    st.session_state.pop("gradcam_lung_colon", None)
 
 
 def synchronize_project(manager: ModelManager, project_id: str) -> None:
@@ -159,23 +169,83 @@ def synchronize_project(manager: ModelManager, project_id: str) -> None:
         st.session_state[SESSION_PROJECT_KEY] = project_id
 
 
-def render_project_metadata(project_id: str) -> None:
+def render_project_metadata(
+    project_id: str,
+    mode: AdapterModeMetadata | None = None,
+) -> None:
     project = get_project(project_id)
+    model_name = mode.model_name if mode else project.model_name
+    image_size = mode.image_size if mode else project.image_size
+    task = mode.task if mode else project.task
+    classes = mode.classes if mode else project.classes
+    metrics = mode.primary_metrics if mode else project.primary_metrics
+    limitations = mode.limitations if mode else project.limitations
     summary = st.columns(4)
     summary[0].metric("Projet", project.display_name)
-    summary[1].metric("Modele", project.model_name)
-    summary[2].metric("Resolution", f"{project.image_size}x{project.image_size}")
+    summary[1].metric("Modele", model_name)
+    summary[2].metric("Resolution", f"{image_size}x{image_size}")
     summary[3].metric("Adaptateur", project.adapter_status)
 
-    st.write(f"**Tache :** {project.task}")
+    if mode:
+        st.write(f"**Mode explicite :** {mode.display_name}")
+    st.write(f"**Tache :** {task}")
     st.write(f"**Dataset :** {project.dataset}")
-    st.write(f"**Classes :** {', '.join(project.classes)}")
-    st.write(f"**Metriques documentees :** {', '.join(project.primary_metrics)}")
+    st.write(f"**Classes :** {', '.join(classes)}")
+    st.write(f"**Metriques documentees :** {', '.join(metrics)}")
 
     st.subheader("Limites du projet")
-    for limitation in project.limitations:
+    for limitation in limitations:
         st.write(f"- {limitation}")
     st.warning(project.methodological_note)
+
+
+def configure_lung_colon_mode(manager: ModelManager) -> AdapterModeMetadata:
+    adapter = manager.current_adapter
+    if not isinstance(adapter, LungColonAdapter):
+        raise AdapterError("L'adaptateur LungColon actif est indisponible.")
+
+    modes = adapter.available_modes()
+    selected_mode = st.radio(
+        "Mode de classification",
+        options=[mode.mode_id for mode in modes],
+        format_func=lambda value: next(
+            mode.display_name for mode in modes if mode.mode_id == value
+        ),
+        key=SESSION_LUNG_COLON_MODE_KEY,
+    )
+    if selected_mode != adapter.current_mode:
+        manager.set_active_mode(selected_mode)
+        clear_prediction_state()
+    st.caption("Choix explicite : aucun mode n'est deduit automatiquement de l'image.")
+    return adapter.mode_metadata()
+
+
+def render_lung_colon_methodology(mode: AdapterModeMetadata) -> None:
+    st.subheader("Contexte methodologique Lung + Colon")
+    if mode.mode_id == "multiclass":
+        context = st.columns(4)
+        context[0].metric("Images test", "3 750")
+        context[1].metric("Accuracy", "0.9992")
+        context[2].metric("Macro F1", "0.9992")
+        context[3].metric("Erreurs", "3")
+        st.caption(
+            "Les trois erreurs concernent uniquement la distinction entre deux sous-types "
+            "malins pulmonaires. Aucune seconde decision par organe n'est derivee."
+        )
+    else:
+        context = st.columns(3)
+        context[0].metric("Accuracy locale", "1.0000")
+        context[1].metric("Recall malignant", "1.0000")
+        context[2].metric("Modele distinct", "ResNet18")
+        st.caption(
+            "La sortie binaire vient de son checkpoint specialise ; elle n'est jamais "
+            "derivee des probabilites du modele cinq classes."
+        )
+    st.warning(
+        "LC25000 est un benchmark public aux performances souvent tres elevees. Les scores "
+        "dependent du split et du protocole local, ne sont pas directement comparables aux "
+        "autres projets et ne prouvent aucune generalisation clinique."
+    )
 
 
 def render_breast_methodology() -> None:
@@ -299,6 +369,14 @@ def render_prediction(result: PredictionResult) -> None:
     )
     st.dataframe(probability_rows, hide_index=True, width="stretch")
     st.bar_chart(probability_rows.set_index("classe"))
+    mode_display_name = (result.raw_metadata or {}).get("mode_display_name")
+    if mode_display_name:
+        st.caption(f"Mode LungColon utilise : {mode_display_name}.")
+        if (result.raw_metadata or {}).get("mode_id") == "binary":
+            st.info(
+                "Cette sortie utilise le checkpoint binaire specialise, distinct du "
+                "modele 5 classes."
+            )
     for warning in result.warnings:
         st.caption(warning)
 
@@ -326,18 +404,23 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
             display_path = checkpoint.checkpoint_path
         st.caption(f"Chemin local attendu : `{display_path}`")
 
+    mode_id = getattr(adapter, "current_mode", "single")
+    mode_label = ""
+    if isinstance(adapter, LungColonAdapter):
+        mode_label = f" - {adapter.mode_metadata().display_name}"
+
     if st.button(
-        f"Charger le modele {project.display_name}",
+        f"Charger le modele {project.display_name}{mode_label}",
         disabled=checkpoint.status != "available" or adapter.is_loaded,
         type="secondary",
-        key=f"load_{project_id}",
+        key=f"load_{project_id}_{mode_id}",
     ):
         try:
             adapter.load()
         except (CheckpointMissingError, CheckpointIncompatibleError) as exc:
             st.error(str(exc))
         else:
-            st.success(f"Modele {project.display_name} charge a la demande.")
+            st.success(f"Modele {project.display_name}{mode_label} charge a la demande.")
 
     st.caption(f"Modele en memoire : {'oui' if adapter.is_loaded else 'non'}")
     uploaded_file = st.file_uploader(
@@ -361,7 +444,7 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
         "Analyser l'image",
         type="primary",
         disabled=uploaded_image is None,
-        key=f"analyze_{project_id}",
+        key=f"analyze_{project_id}_{mode_id}",
     ):
         if uploaded_image is None:
             st.error("Chargez une image PNG ou JPEG valide avant l'analyse.")
@@ -419,7 +502,7 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
 def render_app() -> None:
     st.set_page_config(page_title="R.C.C.I.A MultiCancer", layout="wide")
     st.title("R.C.C.I.A MultiCancer")
-    st.caption("Hub de pipelines specialises - V1.3 Metastasis + Threshold Decision Layer")
+    st.caption("Hub de pipelines specialises - V1.4 LungColon multimode explicite")
     st.error(
         "Demonstrateur educatif / portfolio uniquement. Aucune validation clinique, "
         "aucun diagnostic medical et aucune recommandation medicale."
@@ -444,7 +527,13 @@ def render_app() -> None:
     else:
         manager.unload_current()
 
+    selected_mode_metadata: AdapterModeMetadata | None = None
     with st.sidebar:
+        if selected_project_id == "lung_colon" and manager.active_project_id == "lung_colon":
+            try:
+                selected_mode_metadata = configure_lung_colon_mode(manager)
+            except AdapterError as exc:
+                st.error(str(exc))
         st.caption(f"Integration : {selected_project.adapter_status}")
         st.caption(
             "Prediction : "
@@ -457,11 +546,13 @@ def render_app() -> None:
 
     st.subheader("Portefeuille specialise")
     st.dataframe(project_rows(), hide_index=True, width="stretch")
-    render_project_metadata(selected_project_id)
+    render_project_metadata(selected_project_id, mode=selected_mode_metadata)
     if selected_project_id == "breast":
         render_breast_methodology()
     elif selected_project_id == "metastasis":
         render_metastasis_methodology()
+    elif selected_project_id == "lung_colon" and selected_mode_metadata is not None:
+        render_lung_colon_methodology(selected_mode_metadata)
 
     if selected_project.integrated and selected_project.supports_prediction:
         render_integrated_flow(manager, selected_project_id)

@@ -6,6 +6,7 @@ from PIL import Image
 from multicancer.adapters.base import BaseAdapter
 from multicancer.adapters.breast_adapter import BreastAdapter
 from multicancer.adapters.leukemia_adapter import LeukemiaAdapter
+from multicancer.adapters.lung_colon_adapter import LungColonAdapter
 from multicancer.adapters.metastasis_adapter import MetastasisAdapter
 from multicancer.exceptions import AdapterError
 from multicancer.model_manager import ModelManager
@@ -125,12 +126,14 @@ def test_default_manager_activates_all_integrated_adapters() -> None:
     leukemia = manager.activate("leukemia")
     breast = manager.activate("breast")
     metastasis = manager.activate("metastasis")
+    lung_colon = manager.activate("lung_colon")
 
     assert isinstance(leukemia, LeukemiaAdapter)
     assert isinstance(breast, BreastAdapter)
     assert isinstance(metastasis, MetastasisAdapter)
-    assert manager.current_adapter is metastasis
-    assert manager.active_project_id == "metastasis"
+    assert isinstance(lung_colon, LungColonAdapter)
+    assert manager.current_adapter is lung_colon
+    assert manager.active_project_id == "lung_colon"
 
 
 @pytest.mark.parametrize(
@@ -139,6 +142,10 @@ def test_default_manager_activates_all_integrated_adapters() -> None:
         ("breast", "metastasis"),
         ("leukemia", "metastasis"),
         ("metastasis", "breast"),
+        ("leukemia", "lung_colon"),
+        ("breast", "lung_colon"),
+        ("metastasis", "lung_colon"),
+        ("lung_colon", "leukemia"),
     ],
 )
 def test_integrated_project_switch_unloads_previous_model(
@@ -147,7 +154,7 @@ def test_integrated_project_switch_unloads_previous_model(
 ) -> None:
     adapters = {
         project_id: FakeAdapter(project_id)
-        for project_id in ("leukemia", "breast", "metastasis")
+        for project_id in ("leukemia", "breast", "metastasis", "lung_colon")
     }
     manager = ModelManager(
         factories={
@@ -168,3 +175,22 @@ def test_integrated_project_switch_unloads_previous_model(
 
     assert manager.active_project_id == second_project
     assert sum(adapter.is_loaded for adapter in adapters.values()) == 1
+
+
+def test_manager_delegates_lung_colon_mode_switch() -> None:
+    manager = ModelManager()
+    adapter = manager.activate("lung_colon")
+
+    manager.set_active_mode("binary")
+
+    assert isinstance(adapter, LungColonAdapter)
+    assert adapter.current_mode == "binary"
+    assert adapter.loaded_mode is None
+
+
+def test_manager_rejects_mode_switch_for_another_project() -> None:
+    manager = ModelManager()
+    manager.activate("leukemia")
+
+    with pytest.raises(AdapterError, match="uniquement pour LungColon"):
+        manager.set_active_mode("binary")

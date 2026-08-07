@@ -7,6 +7,7 @@ from collections.abc import Callable, Mapping
 from .adapters.base import BaseAdapter
 from .adapters.breast_adapter import BreastAdapter
 from .adapters.leukemia_adapter import LeukemiaAdapter
+from .adapters.lung_colon_adapter import LungColonAdapter
 from .adapters.metastasis_adapter import MetastasisAdapter
 from .exceptions import AdapterError
 
@@ -22,6 +23,7 @@ class ModelManager:
             "leukemia": LeukemiaAdapter,
             "breast": BreastAdapter,
             "metastasis": MetastasisAdapter,
+            "lung_colon": LungColonAdapter,
         }
         self._factories = dict(default_factories if factories is None else factories)
         self._current_adapter: BaseAdapter | None = None
@@ -50,6 +52,16 @@ class ModelManager:
         self._current_adapter = adapter
         self._active_project_id = project_id
         return adapter
+
+    def set_active_mode(self, mode_id: str) -> None:
+        if self._active_project_id != "lung_colon" or not isinstance(
+            self._current_adapter,
+            LungColonAdapter,
+        ):
+            raise AdapterError(
+                "La selection de mode est disponible uniquement pour LungColon actif."
+            )
+        self._current_adapter.set_mode(mode_id)
 
     def unload_current(self) -> None:
         if self._current_adapter is not None:
