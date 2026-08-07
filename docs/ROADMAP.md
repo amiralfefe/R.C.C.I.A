@@ -154,7 +154,7 @@ Prochaines etapes Metastasis :
 
 ## Phase 5 - MultiCancer
 
-Statut : V1.4 complete, quatre adaptateurs specialises integres.
+Statut : V1 complete / portfolio-ready.
 
 Objectif : creer un hub transversal qui route explicitement vers les pipelines
 specialises sans fusionner les datasets ni presenter un modele medical universel.
@@ -207,7 +207,17 @@ Livrables V1.4 :
 - Grad-CAM par mode et limites LC25000 visibles ;
 - aucun chargement simultane des deux modeles.
 
-Objectifs V1 :
+Livrables V1.5 :
+
+- QA reelle des cinq parcours avec checkpoints locaux ;
+- verification Streamlit AppTest des bascules, probabilites, Grad-CAM et seuils ;
+- validation des erreurs controlees et du lifecycle memoire ;
+- captures finales du hub ;
+- resume projet, pitch entretien, brouillons LinkedIn et release notes ;
+- README final portfolio ;
+- tag de reference `multicancer-v1`.
+
+Statut final V1 :
 
 1. Leukemia : integre.
 2. Breast : integre.
@@ -215,6 +225,9 @@ Objectifs V1 :
 4. LungColon : integre, avec modes 5 classes et binaire explicites.
 5. Conserver le chargement paresseux d'un seul modele.
 6. Afficher les limites methodologiques avec chaque prediction.
+
+MultiCancer V1 est termine. Aucun chantier V2 n'est ajoute automatiquement a cette
+roadmap.
 
 Leukemia, LungColon, Breast et Metastasis restent termines. Leurs pipelines ne doivent
 pas etre modifies par MultiCancer sauf correction d'interface ciblee et testee.

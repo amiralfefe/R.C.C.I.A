@@ -12,7 +12,7 @@ Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne
 | [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
 | [Breast](projects/breast/README.md) | V2.2 complete + final pack | Classification BreakHis benign/malignant avec split patient-aware, Streamlit, benchmark ResNet18 / MobileNetV3 / EfficientNet, analyse d'erreurs et docs portfolio |
 | [Metastasis](projects/metastasis/README.md) | V2.2 complete + final pack | Classification de patches `non_metastatic` vs `metastatic`, pipeline PyTorch, ROC-AUC / PR-AUC, Streamlit, Grad-CAM, benchmark multi-modeles, analyse seuils/erreurs et docs portfolio |
-| [MultiCancer](projects/multicancer/README.md) | V1.4 complete | Hub des quatre projets avec lazy loading, modes LungColon explicites et un seul modele charge |
+| [MultiCancer](projects/multicancer/README.md) | V1 complete + portfolio pack | Hub final des quatre projets avec cinq parcours, lazy loading, Grad-CAM, seuils et modes LungColon explicites |
 
 ## Projet Principal Termine
 
@@ -180,19 +180,29 @@ Pack portfolio Metastasis :
 - [LinkedIn draft](projects/metastasis/docs/LINKEDIN_DRAFT.md)
 - [Release notes V2.1](projects/metastasis/docs/RELEASE_NOTES_V2_1.md)
 
-## Lancer Le Hub MultiCancer V1.4
+## Lancer Le Hub MultiCancer V1
 
 ```powershell
 .\.venv\Scripts\streamlit.exe run projects\multicancer\app.py
 ```
 
-MultiCancer est le hub final du monorepo. Sa V1.4 integre Leukemia, Breast, Metastasis et
-LungColon avec chargement paresseux, predictions normalisees et Grad-CAM. LungColon impose
-un choix explicite entre son checkpoint cinq classes et son checkpoint binaire ; les deux
-modeles ne sont jamais charges simultanement.
+MultiCancer est le hub final du monorepo. Sa V1 integre Leukemia, Breast, Metastasis et
+LungColon avec cinq parcours reels, chargement paresseux, predictions normalisees et
+Grad-CAM. LungColon impose un choix explicite entre son checkpoint cinq classes et son
+checkpoint binaire ; les deux modeles ne sont jamais charges simultanement.
 
 Le hub route explicitement vers des pipelines specialises et ne construit pas de modele
 medical universel.
+
+Statut : **MultiCancer V1 complete / portfolio-ready**. Tag de reference :
+`multicancer-v1`.
+
+Pack portfolio MultiCancer :
+
+- [Project summary](projects/multicancer/docs/PROJECT_SUMMARY.md)
+- [Interview pitch](projects/multicancer/docs/INTERVIEW_PITCH.md)
+- [LinkedIn drafts](projects/multicancer/docs/LINKEDIN_DRAFT.md)
+- [Release notes V1](projects/multicancer/docs/RELEASE_NOTES_V1.md)
 
 ## Docs Globales
 
@@ -207,6 +217,10 @@ medical universel.
 - [MultiCancer V1.2 Breast adapter](projects/multicancer/docs/V1_BREAST_ADAPTER.md)
 - [MultiCancer V1.3 Metastasis adapter](projects/multicancer/docs/V1_METASTASIS_ADAPTER.md)
 - [MultiCancer V1.4 LungColon adapter](projects/multicancer/docs/V1_LUNG_COLON_ADAPTER.md)
+- [MultiCancer project summary](projects/multicancer/docs/PROJECT_SUMMARY.md)
+- [MultiCancer interview pitch](projects/multicancer/docs/INTERVIEW_PITCH.md)
+- [MultiCancer LinkedIn drafts](projects/multicancer/docs/LINKEDIN_DRAFT.md)
+- [MultiCancer release notes V1](projects/multicancer/docs/RELEASE_NOTES_V1.md)
 - [Leukemia project summary](projects/leukemia/docs/PROJECT_SUMMARY.md)
 - [Leukemia interview pitch](projects/leukemia/docs/INTERVIEW_PITCH.md)
 - [Leukemia LinkedIn draft](projects/leukemia/docs/LINKEDIN_DRAFT.md)

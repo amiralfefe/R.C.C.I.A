@@ -1,5 +1,7 @@
 # MultiCancer V1 Roadmap
 
+Statut global : **MultiCancer V1 complete / portfolio-ready**.
+
 ## Phase 1 - Registry Et Schemas
 
 Statut : termine en V1.1.
@@ -53,17 +55,34 @@ La V1.4 ajoute `AdapterModeMetadata` et un unload strict lors des bascules LungC
 
 ## Phase 6 - Comparaison Methodologique
 
+Statut : termine.
+
 - afficher datasets, classes, resolutions et splits ;
 - presenter les metriques avec leur protocole ;
 - interdire tout classement global simpliste.
 
 ## Phase 7 - Tests Et Gestion Des Erreurs
 
+Statut : termine.
+
 - checkpoint absent ou incompatible ;
 - image invalide ou format non supporte ;
 - adaptateur indisponible ;
 - contrat commun de prediction ;
 - absence de chargement multiple de modeles.
+
+## Phase 8 - Final QA Et Portfolio Pack
+
+Statut : termine en V1.5.
+
+- QA reelle des cinq parcours avec checkpoints locaux ;
+- probabilites et dimensions Grad-CAM verifiees ;
+- AppTest final des transitions Leukemia, Breast, Metastasis et LungColon ;
+- seuil Metastasis verifie sans nouvelle inference ;
+- changement de mode LungColon sans sortie obsolette ;
+- resume projet, pitch entretien, brouillons LinkedIn et release notes ;
+- captures Streamlit et README final ;
+- scan des fichiers sensibles, 120 tests passes et tag `multicancer-v1`.
 
 ## Criteres De Fin V1
 
@@ -75,3 +94,5 @@ La V1.4 ajoute `AdapterModeMetadata` et un unload strict lors des bascules LungC
 - un checkpoint absent est gere proprement ;
 - aucun dataset ou modele n'est melange avec un autre projet ;
 - aucun artefact lourd ou sensible n'est versionne.
+
+Tous les criteres de fin V1 sont valides. Aucune V2 n'est planifiee automatiquement.

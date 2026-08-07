@@ -409,6 +409,9 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
     if isinstance(adapter, LungColonAdapter):
         mode_label = f" - {adapter.mode_metadata().display_name}"
 
+    memory_status = st.empty()
+    memory_status.caption(f"Modele en memoire : {'oui' if adapter.is_loaded else 'non'}")
+
     if st.button(
         f"Charger le modele {project.display_name}{mode_label}",
         disabled=checkpoint.status != "available" or adapter.is_loaded,
@@ -421,8 +424,7 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
             st.error(str(exc))
         else:
             st.success(f"Modele {project.display_name}{mode_label} charge a la demande.")
-
-    st.caption(f"Modele en memoire : {'oui' if adapter.is_loaded else 'non'}")
+            memory_status.caption("Modele en memoire : oui")
     uploaded_file = st.file_uploader(
         UPLOAD_LABELS.get(project_id, "Image a analyser"),
         type=["png", "jpg", "jpeg"],
@@ -458,6 +460,7 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
                 st.session_state[SESSION_PREDICTION_KEY] = prediction
                 st.session_state[SESSION_IMAGE_KEY] = uploaded_image.copy()
                 st.success(f"Prediction {project.display_name} terminee.")
+                memory_status.caption("Modele en memoire : oui")
 
     stored_prediction = st.session_state.get(SESSION_PREDICTION_KEY)
     prediction = (
@@ -502,7 +505,7 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
 def render_app() -> None:
     st.set_page_config(page_title="R.C.C.I.A MultiCancer", layout="wide")
     st.title("R.C.C.I.A MultiCancer")
-    st.caption("Hub de pipelines specialises - V1.4 LungColon multimode explicite")
+    st.caption("Hub de pipelines specialises - MultiCancer V1 portfolio-ready")
     st.error(
         "Demonstrateur educatif / portfolio uniquement. Aucune validation clinique, "
         "aucun diagnostic medical et aucune recommandation medicale."
