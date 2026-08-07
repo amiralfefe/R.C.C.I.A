@@ -172,13 +172,14 @@ du parcours selectionne.
 
 ## Public Deployment
 
-Hugging Face Space : **a ajouter apres validation**.
+Le Docker Space Hugging Face a ete abandonne car le compte actuel necessite un plan
+payant pour ce type de Space. Le repository prive Hugging Face contenant les cinq
+checkpoints est conserve.
 
-La preparation Docker isolee se trouve dans
-[`deploy/hf-multicancer`](../../deploy/hf-multicancer/README.md). Le Space clone la
-release stable `multicancer-v1` et telecharge les cinq modeles depuis un repository
-Hugging Face Model separe via `HF_MODEL_REPO_ID` et un secret read-only `HF_TOKEN`.
-Aucun checkpoint n'est stocke dans GitHub et le lazy loading existant reste inchange.
+Le packaging [Streamlit Community Cloud](../../deploy/streamlit-multicancer/README.md)
+est pret pour validation publique. Il reutilise le downloader existant, ne stocke aucun
+checkpoint dans GitHub et conserve le lazy loading. L'URL publique reste a ajouter apres
+un deploiement et une validation reels.
 
 ## Limites
 
