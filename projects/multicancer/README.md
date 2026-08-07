@@ -170,6 +170,16 @@ Depuis la racine :
 Le hub reste consultable sans checkpoint. Une prediction necessite le checkpoint local
 du parcours selectionne.
 
+## Public Deployment
+
+Hugging Face Space : **a ajouter apres validation**.
+
+La preparation Docker isolee se trouve dans
+[`deploy/hf-multicancer`](../../deploy/hf-multicancer/README.md). Le Space clone la
+release stable `multicancer-v1` et telecharge les cinq modeles depuis un repository
+Hugging Face Model separe via `HF_MODEL_REPO_ID` et un secret read-only `HF_TOKEN`.
+Aucun checkpoint n'est stocke dans GitHub et le lazy loading existant reste inchange.
+
 ## Limites
 
 - datasets publics sans validation clinique externe ;
