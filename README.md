@@ -4,6 +4,11 @@ R.C.C.I.A est un monorepo portfolio IA/data consacre a des projets de computer v
 
 Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne remplace pas un professionnel de sante et ne doit jamais orienter une decision medicale.
 
+**Demo publique MultiCancer :** https://rccia-multicancer.streamlit.app/
+
+La demo regroupe les cinq parcours specialises avec chargement paresseux, probabilites
+et Grad-CAM. Elle reste un demonstrateur educatif / portfolio sans validation clinique.
+
 ## Project Status
 
 | Projet | Statut | Description |
@@ -181,6 +186,8 @@ Pack portfolio Metastasis :
 - [Release notes V2.1](projects/metastasis/docs/RELEASE_NOTES_V2_1.md)
 
 ## Lancer Le Hub MultiCancer V1
+
+Demo publique validee : https://rccia-multicancer.streamlit.app/
 
 ```powershell
 .\.venv\Scripts\streamlit.exe run projects\multicancer\app.py

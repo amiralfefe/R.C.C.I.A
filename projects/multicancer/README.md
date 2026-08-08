@@ -11,6 +11,8 @@ datasets, leurs classes ou leurs modeles.
 
 **MultiCancer V1 complete / portfolio-ready.**
 
+**Demo publique :** https://rccia-multicancer.streamlit.app/
+
 | Version | Livrable | Statut |
 | --- | --- | --- |
 | V0 | Scope, registre et architecture | termine |
@@ -177,9 +179,13 @@ payant pour ce type de Space. Le repository prive Hugging Face contenant les cin
 checkpoints est conserve.
 
 Le packaging [Streamlit Community Cloud](../../deploy/streamlit-multicancer/README.md)
-est pret pour validation publique. Il reutilise le downloader existant, ne stocke aucun
-checkpoint dans GitHub et conserve le lazy loading. L'URL publique reste a ajouter apres
-un deploiement et une validation reels.
+est deploye et valide publiquement a l'adresse
+https://rccia-multicancer.streamlit.app/. Il reutilise le downloader existant, ne stocke
+aucun checkpoint dans GitHub et conserve le lazy loading. Les cinq checkpoints restent
+dans le repository prive Hugging Face et sont recuperes au demarrage du service.
+
+Le detail de la validation publique, du cold start et des cinq parcours est documente
+dans le [rapport de validation du deploiement](../../deploy/streamlit-multicancer/DEPLOYMENT_VALIDATION.md).
 
 ## Limites
 
