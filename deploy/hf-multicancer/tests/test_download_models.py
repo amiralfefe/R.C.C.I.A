@@ -74,6 +74,39 @@ def test_downloads_all_files_and_skips_existing(tmp_path: Path) -> None:
     assert {result.status for result in second_results} == {"skipped"}
 
 
+def test_downloads_only_selected_model_files(tmp_path: Path) -> None:
+    cache = tmp_path / "cache"
+    calls: list[tuple[str, str, str | None]] = []
+
+    def fake_downloader(repo_id: str, filename: str, token: str | None) -> Path:
+        calls.append((repo_id, filename, token))
+        cached_file = cache / filename
+        cached_file.parent.mkdir(parents=True, exist_ok=True)
+        cached_file.write_bytes(b"selected-checkpoint")
+        return cached_file
+
+    leukemia_model = next(
+        model_file
+        for model_file in download_module.MODEL_FILES
+        if model_file.remote_path == "leukemia/best_model.pt"
+    )
+    results = download_module.download_models(
+        repo_root=tmp_path / "repo",
+        repo_id="owner/models",
+        token="opaque-test-token",
+        downloader=fake_downloader,
+        model_files=(leukemia_model,),
+    )
+
+    assert calls == [
+        ("owner/models", "leukemia/best_model.pt", "opaque-test-token")
+    ]
+    assert len(results) == 1
+    assert results[0].model_file == leukemia_model
+    assert results[0].status == "downloaded"
+    assert results[0].destination.is_file()
+
+
 def test_missing_model_repository_configuration_is_explicit(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

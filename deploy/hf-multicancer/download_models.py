@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import shutil
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -135,6 +136,7 @@ def download_models(
     repo_id: str | None = None,
     token: str | None = None,
     downloader: HubDownloader | None = None,
+    model_files: Iterable[ModelFile] | None = None,
 ) -> tuple[DownloadResult, ...]:
     resolved_repo_id = (repo_id or os.getenv("HF_MODEL_REPO_ID", "")).strip()
     if not resolved_repo_id:
@@ -147,13 +149,14 @@ def download_models(
     resolved_token = resolved_token.strip() if resolved_token else None
     resolved_root = _resolve_repo_root(repo_root)
     fetch = downloader or _download_from_hub
+    selected_model_files = MODEL_FILES if model_files is None else tuple(model_files)
 
     print(f"[models] Repository: {resolved_repo_id}")
     if resolved_token is None:
         print("[models] HF_TOKEN is not configured; only public repositories are accessible.")
 
     results: list[DownloadResult] = []
-    for model_file in MODEL_FILES:
+    for model_file in selected_model_files:
         destination = resolved_root / model_file.local_path
         if destination.is_file() and destination.stat().st_size > 0:
             print(f"[models] Skip existing {model_file.project}: {model_file.local_path}")

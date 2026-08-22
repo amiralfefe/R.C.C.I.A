@@ -49,7 +49,10 @@ st.set_page_config(page_title="Cancer Cell Vision", layout="wide")
 @st.cache_resource
 def load_model(checkpoint_path: str):
     device = get_device()
-    model, checkpoint = load_checkpoint(Path(checkpoint_path), device=device)
+    model, checkpoint = load_checkpoint(
+        resolve_artifact_path(checkpoint_path),
+        device=device,
+    )
     return model, checkpoint, device
 
 
