@@ -17,6 +17,7 @@ testpaths = [
     "projects/multicancer/tests",
 ]
 pythonpath = [
+    "projects",
     "projects/leukemia",
     "projects/lung_colon",
     "projects/breast",

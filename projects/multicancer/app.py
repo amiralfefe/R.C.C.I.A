@@ -1,25 +1,32 @@
 from __future__ import annotations
 
-import io
 import sys
 from dataclasses import asdict
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 
 
 APP_DIR = Path(__file__).resolve().parent
+PROJECTS_DIR = APP_DIR.parent
 if str(APP_DIR) not in sys.path:
     sys.path.insert(0, str(APP_DIR))
+if str(PROJECTS_DIR) not in sys.path:
+    sys.path.insert(0, str(PROJECTS_DIR))
+
+from rccia_common.image_uploads import (  # noqa: E402
+    HUB_IMAGE_FORMATS,
+    ImageUploadError,
+    decode_uploaded_image,
+)
 
 from multicancer.exceptions import (  # noqa: E402
     AdapterError,
     CheckpointIncompatibleError,
     CheckpointMissingError,
     ExplanationUnavailableError,
-    InvalidImageError,
 )
 from multicancer.model_manager import ModelManager  # noqa: E402
 from multicancer.adapters.lung_colon_adapter import LungColonAdapter  # noqa: E402
@@ -117,33 +124,6 @@ def project_rows() -> list[dict[str, str]]:
             }
         )
     return rows
-
-
-def decode_uploaded_image(content: bytes) -> Image.Image:
-    """Validate PNG/JPEG bytes and return an in-memory RGB image."""
-
-    if not content:
-        raise InvalidImageError("Le fichier image est vide.")
-
-    try:
-        with Image.open(io.BytesIO(content)) as candidate:
-            detected_format = candidate.format
-            candidate.verify()
-        if detected_format not in {"PNG", "JPEG"}:
-            raise InvalidImageError(
-                f"Format image non supporte : {detected_format or 'inconnu'}. Utilisez PNG ou JPEG."
-            )
-        with Image.open(io.BytesIO(content)) as candidate:
-            image = candidate.convert("RGB")
-            image.load()
-    except InvalidImageError:
-        raise
-    except (UnidentifiedImageError, OSError, ValueError) as exc:
-        raise InvalidImageError("Le fichier ne contient pas une image PNG/JPEG valide.") from exc
-
-    if image.width <= 0 or image.height <= 0:
-        raise InvalidImageError("L'image possede des dimensions invalides.")
-    return image
 
 
 def get_model_manager() -> ModelManager:
@@ -435,8 +415,11 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
     uploaded_image: Image.Image | None = None
     if uploaded_file is not None:
         try:
-            uploaded_image = decode_uploaded_image(uploaded_file.getvalue())
-        except InvalidImageError as exc:
+            uploaded_image = decode_uploaded_image(
+                uploaded_file,
+                allowed_formats=HUB_IMAGE_FORMATS,
+            )
+        except ImageUploadError as exc:
             st.error(str(exc))
             clear_prediction_state()
         else:

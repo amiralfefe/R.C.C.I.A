@@ -1,23 +1,34 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 import streamlit as st
-from PIL import Image, UnidentifiedImageError
 
-from rccia_lung_colon.binary import BINARY_CLASSES, SOURCE_CLASSES_BY_BINARY
-from rccia_lung_colon.error_analysis import load_summary
-from rccia_lung_colon.gradcam import (
+
+APP_DIR = Path(__file__).resolve().parent
+PROJECTS_DIR = APP_DIR.parent
+if str(PROJECTS_DIR) not in sys.path:
+    sys.path.insert(0, str(PROJECTS_DIR))
+
+from rccia_common.image_uploads import (  # noqa: E402
+    STANDALONE_IMAGE_FORMATS,
+    ImageUploadError,
+    decode_uploaded_image,
+)
+from rccia_lung_colon.binary import BINARY_CLASSES, SOURCE_CLASSES_BY_BINARY  # noqa: E402
+from rccia_lung_colon.error_analysis import load_summary  # noqa: E402
+from rccia_lung_colon.gradcam import (  # noqa: E402
     GradCAM,
     denormalize_image,
     get_gradcam_target_layer,
     image_to_tensor,
     overlay_cam,
 )
-from rccia_lung_colon.model import load_checkpoint, predict_image
-from rccia_lung_colon.utils import get_device
+from rccia_lung_colon.model import load_checkpoint, predict_image  # noqa: E402
+from rccia_lung_colon.utils import get_device  # noqa: E402
 
 
 MULTICLASS_MODE = "Mode 5 classes"
@@ -29,7 +40,6 @@ CHECKPOINTS_BY_MODE = {
 }
 
 ERROR_ANALYSIS_DIR = Path("outputs/error_analysis")
-APP_DIR = Path(__file__).resolve().parent
 
 
 def format_percent(value: float) -> str:
@@ -232,9 +242,12 @@ def render_app() -> None:
 
         if uploaded_file is not None:
             try:
-                image = Image.open(uploaded_file).convert("RGB")
-            except (UnidentifiedImageError, OSError) as exc:
-                st.error(f"Image invalide : {exc}")
+                image = decode_uploaded_image(
+                    uploaded_file,
+                    allowed_formats=STANDALONE_IMAGE_FORMATS,
+                )
+            except ImageUploadError as exc:
+                st.error(str(exc))
             else:
                 left, right = st.columns([1, 1])
                 with left:

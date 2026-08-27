@@ -1,24 +1,34 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-from PIL import Image, UnidentifiedImageError
 
-from rccia_leukemia.gradcam import (
+
+APP_DIR = Path(__file__).resolve().parent
+PROJECTS_DIR = APP_DIR.parent
+if str(PROJECTS_DIR) not in sys.path:
+    sys.path.insert(0, str(PROJECTS_DIR))
+
+from rccia_common.image_uploads import (  # noqa: E402
+    LEUKEMIA_IMAGE_FORMATS,
+    ImageUploadError,
+    decode_uploaded_image,
+)
+from rccia_leukemia.gradcam import (  # noqa: E402
     GradCAM,
     denormalize_image,
     get_gradcam_target_layer,
     image_to_tensor,
     overlay_cam,
 )
-from rccia_leukemia.error_analysis import load_error_analysis_artifacts
-from rccia_leukemia.model import load_checkpoint, predict_image
-from rccia_leukemia.utils import get_device
+from rccia_leukemia.error_analysis import load_error_analysis_artifacts  # noqa: E402
+from rccia_leukemia.model import load_checkpoint, predict_image  # noqa: E402
+from rccia_leukemia.utils import get_device  # noqa: E402
 
 
-APP_DIR = Path(__file__).resolve().parent
 DEFAULT_CHECKPOINT_LABEL = "outputs/best_model.pt"
 DEFAULT_CHECKPOINT = APP_DIR / "outputs" / "best_model.pt"
 DEFAULT_ERROR_ANALYSIS_DIR = APP_DIR / "outputs" / "error_analysis"
@@ -142,13 +152,13 @@ with left:
     uploaded_file = st.file_uploader("Image microscopique", type=["png", "jpg", "jpeg", "bmp"])
     if uploaded_file is not None:
         try:
-            image = Image.open(uploaded_file).convert("RGB")
-            st.image(image, use_container_width=True)
-        except (UnidentifiedImageError, OSError):
-            st.error(
-                "Image invalide ou illisible. Utilise un fichier PNG, JPG, JPEG ou BMP "
-                "exporte correctement."
+            image = decode_uploaded_image(
+                uploaded_file,
+                allowed_formats=LEUKEMIA_IMAGE_FORMATS,
             )
+            st.image(image, use_container_width=True)
+        except ImageUploadError as exc:
+            st.error(str(exc))
     else:
         st.info("Charge une image du test set ou une image microscopique compatible.")
 

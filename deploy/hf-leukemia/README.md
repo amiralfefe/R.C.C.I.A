@@ -62,6 +62,7 @@ app.py
 requirements.txt
 README.md
 projects/
+  rccia_common/
   leukemia/
     app.py
     rccia_leukemia/
@@ -76,6 +77,7 @@ deploy/hf-leukemia/Dockerfile -> Dockerfile
 deploy/hf-leukemia/app.py -> app.py
 deploy/hf-leukemia/requirements.txt -> requirements.txt
 deploy/hf-leukemia/README.md -> README.md
+projects/rccia_common/ -> projects/rccia_common/
 projects/leukemia/app.py -> projects/leukemia/app.py
 projects/leukemia/rccia_leukemia/ -> projects/leukemia/rccia_leukemia/
 ```

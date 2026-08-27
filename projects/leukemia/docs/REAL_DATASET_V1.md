@@ -26,7 +26,7 @@ Le CLI Kaggle est installe avec les dependances dev :
 Le token attendu est :
 
 ```text
-C:\Users\fayss.DESKTOP-FB6N3MC\.kaggle\kaggle.json
+$env:USERPROFILE\.kaggle\kaggle.json
 ```
 
 Pour le creer :
@@ -36,10 +36,10 @@ Pour le creer :
 3. Cree le dossier local si besoin :
 
 ```powershell
-New-Item -ItemType Directory -Force -Path C:\Users\fayss.DESKTOP-FB6N3MC\.kaggle
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.kaggle"
 ```
 
-4. Place le fichier `kaggle.json` telecharge dans `C:\Users\fayss.DESKTOP-FB6N3MC\.kaggle\`.
+4. Place le fichier `kaggle.json` telecharge dans `$env:USERPROFILE\.kaggle\`.
 5. Ne commit jamais ce fichier.
 
 Verification du package installe :
