@@ -10,6 +10,9 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT.parent) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT.parent))
+from rccia_common.dataset_paths import validate_dataset_paths
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -105,7 +108,12 @@ def prepare_binary_dataset(
     output_dir: Path,
     overwrite: bool = False,
 ) -> dict[str, dict[str, int]]:
+    validate_dataset_paths(input_dir, output_dir)
     validate_input(input_dir)
+    for split in SPLITS:
+        for source_class in BINARY_CLASS_MAPPING:
+            if not collect_images(input_dir / split / source_class):
+                raise ValueError("Every source class must contain supported images.")
     prepare_output(output_dir, overwrite=overwrite)
 
     summary = {split: copy_binary_split(input_dir, output_dir, split) for split in SPLITS}

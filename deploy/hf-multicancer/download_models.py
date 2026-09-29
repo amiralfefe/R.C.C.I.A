@@ -5,6 +5,8 @@ from __future__ import annotations
 import os
 import shutil
 import sys
+import tempfile
+from threading import Lock
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -65,6 +67,7 @@ class ModelDownloadError(RuntimeError):
 
 
 HubDownloader = Callable[[str, str, str | None], Path]
+INSTALL_LOCK = Lock()
 
 
 def _download_from_hub(repo_id: str, filename: str, token: str | None) -> Path:
@@ -185,25 +188,36 @@ def download_models(
             )
             raise ModelDownloadError(message) from exc
 
-        if not cached_file.is_file():
+        if not cached_file.is_file() or cached_file.stat().st_size == 0:
             raise ModelDownloadError(
                 f"Downloaded checkpoint is unavailable in the local Hub cache: "
                 f"'{model_file.remote_path}'."
             )
 
         destination.parent.mkdir(parents=True, exist_ok=True)
-        temporary = destination.with_suffix(f"{destination.suffix}.part")
+        temporary = None
+        status = "downloaded"
         try:
+            # Each session owns its staging file; replacement remains atomic.
+            with tempfile.NamedTemporaryFile(
+                dir=destination.parent, prefix=destination.name + ".", suffix=".part", delete=False
+            ) as staged:
+                temporary = Path(staged.name)
             shutil.copyfile(cached_file, temporary)
-            temporary.replace(destination)
+            with INSTALL_LOCK:
+                if destination.is_file() and destination.stat().st_size > 0:
+                    status = "skipped"
+                else:
+                    temporary.replace(destination)
         except OSError as exc:
             raise ModelDownloadError(
                 f"Cannot install checkpoint at '{model_file.local_path}'."
             ) from exc
         finally:
-            temporary.unlink(missing_ok=True)
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
 
-        results.append(DownloadResult(model_file, "downloaded", destination))
+        results.append(DownloadResult(model_file, status, destination))
 
     downloaded = sum(result.status == "downloaded" for result in results)
     skipped = sum(result.status == "skipped" for result in results)

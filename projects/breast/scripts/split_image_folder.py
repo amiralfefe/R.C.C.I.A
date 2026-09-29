@@ -7,11 +7,18 @@ metadata.csv contains a usable patient_id column.
 from __future__ import annotations
 
 import argparse
+import math
+import sys
 import csv
 import random
 import shutil
 from collections import defaultdict
 from pathlib import Path
+
+PROJECTS_DIR = Path(__file__).resolve().parents[2]
+if str(PROJECTS_DIR) not in sys.path:
+    sys.path.insert(0, str(PROJECTS_DIR))
+from rccia_common.dataset_paths import validate_dataset_paths
 
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
@@ -63,6 +70,7 @@ def copy_images(images: list[Path], destination_dir: Path) -> None:
 
 
 def validate_output_path(input_dir: Path, output_dir: Path) -> None:
+    validate_dataset_paths(input_dir, output_dir)
     resolved_input = input_dir.resolve()
     resolved_output = output_dir.resolve()
 
@@ -219,21 +227,39 @@ def main() -> None:
 
     validate_output_path(args.input_dir, args.output_dir)
 
-    if args.output_dir.exists() and args.overwrite:
-        shutil.rmtree(args.output_dir)
-    elif args.output_dir.exists() and output_has_payload(args.output_dir):
-        raise FileExistsError(
-            f"Output folder already exists and is not empty: {args.output_dir}. "
-            "Use --overwrite to recreate it."
-        )
-
     train_ratio = args.train_ratio
     if train_ratio is None:
         train_ratio = 1 - args.val_ratio - args.test_ratio
-    if train_ratio <= 0 or args.val_ratio <= 0 or args.test_ratio <= 0:
+    if any(not math.isfinite(r) or r <= 0 for r in (train_ratio, args.val_ratio, args.test_ratio)):
         raise ValueError("Ratios must be positive.")
     if abs(train_ratio + args.val_ratio + args.test_ratio - 1) > 1e-6:
         raise ValueError("Ratios must add up to 1.")
+
+    if args.patient_aware:
+        if args.metadata is None:
+            raise ValueError("Patient-aware split requires --metadata.")
+        rows = read_patient_metadata(args.input_dir, args.metadata)
+        patients_by_class: dict[str, set[str]] = defaultdict(set)
+        class_by_patient: dict[str, str] = {}
+        for row in rows:
+            patient, label = str(row["patient_id"]), str(row["class_name"])
+            if patient in class_by_patient and class_by_patient[patient] != label:
+                raise ValueError("A patient has multiple class labels; cannot stratify safely.")
+            class_by_patient[patient] = label
+            patients_by_class[label].add(patient)
+        for patients in patients_by_class.values():
+            counts = split_items(sorted(patients), train_ratio, args.val_ratio)
+            if any(not group for group in counts.values()):
+                raise ValueError("Each class needs patients in every split.")
+    else:
+        class_dirs = [path for path in args.input_dir.iterdir() if path.is_dir()]
+        if not class_dirs or any(not collect_images(path) for path in class_dirs):
+            raise ValueError("Every source class must contain supported images.")
+
+    if args.output_dir.exists() and args.overwrite:
+        shutil.rmtree(args.output_dir)
+    elif args.output_dir.exists() and output_has_payload(args.output_dir):
+        raise FileExistsError("Output folder is not empty; use --overwrite to recreate it.")
 
     if args.patient_aware:
         if args.metadata is None:

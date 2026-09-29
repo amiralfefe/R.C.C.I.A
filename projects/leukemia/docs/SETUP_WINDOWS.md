@@ -4,7 +4,7 @@ Ce sous-projet est pense pour etre lance localement sur Windows avec un environn
 
 ## Option Rapide
 
-Depuis `C:\VSCODE\R.C.C.I.A` :
+Depuis la racine de votre clone R.C.C.I.A :
 
 ```bat
 projects\leukemia\scripts\setup_windows.bat
@@ -14,7 +14,7 @@ Le script cree `.venv` a la racine, installe les dependances et lance les tests.
 
 ## Installation Manuelle
 
-Depuis `C:\VSCODE\R.C.C.I.A` :
+Depuis la racine de votre clone R.C.C.I.A (Python 3.11 recommande) :
 
 ```powershell
 python -m venv .venv

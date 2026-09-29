@@ -43,6 +43,7 @@ SESSION_MANAGER_KEY = "multicancer_model_manager"
 SESSION_PROJECT_KEY = "multicancer_selected_project"
 SESSION_PREDICTION_KEY = "multicancer_last_prediction"
 SESSION_IMAGE_KEY = "multicancer_last_image"
+SESSION_EXPLANATION_KEY = "multicancer_last_explanation"
 SESSION_LUNG_COLON_MODE_KEY = "multicancer_lung_colon_mode"
 
 UPLOAD_LABELS = {
@@ -134,9 +135,14 @@ def get_model_manager() -> ModelManager:
     return manager
 
 
-def clear_prediction_state() -> None:
+def clear_result_state() -> None:
     st.session_state.pop(SESSION_PREDICTION_KEY, None)
     st.session_state.pop(SESSION_IMAGE_KEY, None)
+    st.session_state.pop(SESSION_EXPLANATION_KEY, None)
+
+
+def clear_prediction_state() -> None:
+    clear_result_state()
     st.session_state.pop("upload_lung_colon", None)
     st.session_state.pop("gradcam_lung_colon", None)
 
@@ -410,6 +416,13 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
         type=["png", "jpg", "jpeg"],
         help="Le fichier reste en memoire pendant la session et n'est pas enregistre.",
         key=f"upload_{project_id}",
+        on_change=clear_result_state,
+    )
+    st.caption(
+        "Utilisez uniquement des images publiques de demonstration, sans donnees "
+        "personnelles ni images medicales privees. L'image est traitee sur le serveur "
+        "et conservee temporairement en memoire pour cette session, sans sauvegarde "
+        "applicative ni reutilisation pour l'entrainement."
     )
 
     uploaded_image: Image.Image | None = None
@@ -421,9 +434,10 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
             )
         except ImageUploadError as exc:
             st.error(str(exc))
-            clear_prediction_state()
+            clear_result_state()
         else:
-            st.image(uploaded_image, caption="Image chargee", width=420)
+            with st.container(width=420, border=False):
+                st.image(uploaded_image, caption="Image chargee", width="stretch")
 
     if st.button(
         "Analyser l'image",
@@ -434,6 +448,7 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
         if uploaded_image is None:
             st.error("Chargez une image PNG ou JPEG valide avant l'analyse.")
         else:
+            clear_result_state()
             try:
                 adapter.load()
                 prediction = adapter.predict(uploaded_image)
@@ -470,18 +485,22 @@ def render_integrated_flow(manager: ModelManager, project_id: str) -> None:
                 st.info("Rechargez l'image pour generer Grad-CAM.")
             else:
                 try:
-                    explanation = adapter.explain(
-                        explanation_image,
-                        class_index=prediction.predicted_index,
-                    )
+                    explanation = st.session_state.get(SESSION_EXPLANATION_KEY)
+                    if explanation is None:
+                        explanation = adapter.explain(
+                            explanation_image,
+                            class_index=prediction.predicted_index,
+                        )
+                        st.session_state[SESSION_EXPLANATION_KEY] = explanation
                 except ExplanationUnavailableError as exc:
                     st.info(str(exc))
                 else:
-                    st.image(
-                        explanation.image,
-                        caption=f"Grad-CAM - classe {explanation.class_name}",
-                        width=520,
-                    )
+                    with st.container(width=520, border=False):
+                        st.image(
+                            explanation.image,
+                            caption=f"Grad-CAM - classe {explanation.class_name}",
+                            width="stretch",
+                        )
                     st.caption(explanation.message)
 
 

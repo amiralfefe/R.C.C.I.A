@@ -1,242 +1,148 @@
-# R.C.C.I.A
+# R.C.C.I.A - Computer Vision et ingenierie ML
 
-R.C.C.I.A est un monorepo portfolio IA/data consacre a des projets de computer vision autour d'images publiques liees au cancer.
+**Comparer des classifieurs d'images biomedicales sans masquer leurs erreurs
+derriere une accuracy globale.** Ce portfolio transforme quatre experiences
+specialisees en pipelines de preparation, entrainement, evaluation et prediction,
+reunis dans le hub Streamlit MultiCancer.
 
-Le repo reste strictement educatif : il ne fournit pas de diagnostic medical, ne remplace pas un professionnel de sante et ne doit jamais orienter une decision medicale.
+Il permet aux recruteurs, developpeurs et apprenants d'examiner une demarche ML de
+bout en bout. **Ce n'est ni un dispositif medical, ni un outil de diagnostic,
+ni une IA cliniquement validee.**
 
-**Demo publique MultiCancer :** https://rccia-multicancer.streamlit.app/
+![MultiCancer : prediction et exploration des seuils Metastasis](projects/multicancer/docs/assets/metastasis-threshold-analysis.png)
 
-La demo regroupe les cinq parcours specialises avec chargement paresseux, probabilites
-et Grad-CAM. Elle reste un demonstrateur educatif / portfolio sans validation clinique.
+[Captures des cinq parcours](projects/multicancer/README.md#apercu-streamlit) |
+[Installation et actifs requis](docs/LOCAL_SETUP.md) |
+[Validation locale datee](docs/PORTFOLIO_VALIDATION.md) |
+[Architecture](docs/MULTICANCER_ARCHITECTURE.md)
 
-## Project Status
+## Ce qui est livre
 
-| Projet | Statut | Description |
-| --- | --- | --- |
-| [Leukemia](projects/leukemia/README.md) | termine | Classification `normal` vs `leukemia_blast`, Streamlit, Grad-CAM, benchmark, error analysis |
-| [Lung + Colon](projects/lung_colon/README.md) | V2.2 complete + final pack | Classification LC25000 en 5 classes, Streamlit, Grad-CAM, benchmark multi-modeles, analyse des erreurs, mode binaire benin/malin et docs portfolio |
-| [Breast](projects/breast/README.md) | V2.2 complete + final pack | Classification BreakHis benign/malignant avec split patient-aware, Streamlit, benchmark ResNet18 / MobileNetV3 / EfficientNet, analyse d'erreurs et docs portfolio |
-| [Metastasis](projects/metastasis/README.md) | V2.2 complete + final pack | Classification de patches `non_metastatic` vs `metastatic`, pipeline PyTorch, ROC-AUC / PR-AUC, Streamlit, Grad-CAM, benchmark multi-modeles, analyse seuils/erreurs et docs portfolio |
-| [MultiCancer](projects/multicancer/README.md) | V1 complete + portfolio pack | Hub final des quatre projets avec cinq parcours, lazy loading, Grad-CAM, seuils et modes LungColon explicites |
+- Quatre pipelines : **Leukemia, LungColon, Breast et Metastasis** ; cinq parcours
+  dans le hub, car LungColon possede un mode cinq classes et un mode binaire.
+- Preparation ImageFolder/HDF5, prediction CLI, rapports CSV/JSON, matrices de
+  confusion et comparaison **ResNet18 / MobileNetV3 Small / EfficientNet-B0**.
+- Probabilites, Grad-CAM et analyse d'erreurs ; analyse Breast par patient et
+  grossissement ; exploration des seuils Metastasis.
+- Adaptateurs specialises, resultat commun et chargement paresseux : au plus un
+  modele charge **par session**, decharge avant changement de projet ou de mode.
+- Tests automatises des pipelines, contrats, erreurs, uploads et parcours Streamlit.
 
-## Projet Principal Termine
+**Stack :** Python, PyTorch/torchvision, NumPy, pandas, scikit-learn, Pillow/OpenCV,
+h5py, Matplotlib/Seaborn, Streamlit et pytest. Les architectures sont preentrainees
+puis adaptees aux classes du projet ; aucun modele universel de cancer n'est revendique.
 
-Le sous-projet leucemie est la premiere brique complete du portfolio :
+## Resultats experimentaux
 
-- V1 : pipeline ML reel, Streamlit et Grad-CAM ;
-- V2 : comparaison de modeles ;
-- V2.1 : benchmark reel ResNet18 / MobileNetV3 / EfficientNet ;
-- V2.2 : analyse des erreurs et interpretabilite ;
-- V2.3 : pack CV, LinkedIn, entretien et release notes.
+Resultats historiques documentes, pas de nouveau benchmark lors de la finition
+portfolio. Les protocoles et jeux de test different : **ne pas classer les projets
+entre eux a partir de ces scores**.
 
-Tag de reference :
+| Experience | Test | Resultat de reference | Details |
+| --- | ---: | --- | --- |
+| Leukemia V1, ResNet18 | 1 601 images | Accuracy 91,69 % | [Leukemia](projects/leukemia/README.md) |
+| LungColon cinq classes, EfficientNet-B0 | 3 750 images | Accuracy 99,92 %, 3 erreurs | [Benchmark](projects/lung_colon/docs/V2_MODEL_COMPARISON.md) |
+| Breast, EfficientNet-B0 | 1 481 images | Accuracy 91,22 %, macro F1 90,04 %, recall malignant 95,68 % | [Benchmark patient-aware](projects/breast/docs/V2_MODEL_COMPARISON.md) |
+| Metastasis, EfficientNet-B0 | 750 patches | Accuracy 93,20 %, ROC-AUC 0,9762, average precision 0,9780 | [Benchmark PCam subset](projects/metastasis/docs/V2_MODEL_COMPARISON.md) |
+
+### Ce que l'analyse apporte
+
+**Breast :** separation par patient (55 / 11 / 15 patients en train / validation /
+test, sans intersection documentee). L'analyse releve **130 erreurs, dont 76 sur
+un seul patient** : une moyenne globale masque une forte variabilite.
+[Analyse detaillee](projects/breast/docs/V2_ERROR_ANALYSIS.md).
+
+**Metastasis :** abaisser le seuil de **0,50 a 0,30** fait passer les faux negatifs
+de **27 a 13**, mais les faux positifs de **24 a 69**. Le hub illustre ce compromis
+sans proposer de seuil medical. Le champ historique `pr_auc` correspond a
+`average_precision_score`, pas a une integration trapezoidale.
+[Analyse des seuils](projects/metastasis/docs/V2_ERROR_ANALYSIS.md).
+
+## Limites
+
+- Aucune validation clinique ni validation sur une cohorte externe independante.
+- LC25000 contient des images augmentees ; le split par image ne garantit pas
+  l'independance des sources. Les scores peuvent donc etre optimistes.
+- Le protocole Leukemia ne garantit pas un groupement par patient ; Metastasis
+  utilise 5 000 patches issus de la validation PCam, redivises localement.
+- Comparaisons courtes et exploratoires : choisir modele ou seuil en regardant
+  le test peut biaiser les conclusions. Aucun gain clinique ou utilisateur mesure.
+- Une forte probabilite et une carte Grad-CAM ne garantissent pas une prediction
+  correcte. La capture Breast conserve volontairement une erreur a forte confiance.
+
+## Essayer le projet
+
+### 1. Consulter l'interface sans poids
+
+Depuis un clone, utiliser **Python 3.11** (version locale validee) :
+
+```powershell
+git clone https://github.com/amiralfefe/R.C.C.I.A.git
+cd R.C.C.I.A
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m streamlit run projects/multicancer/app.py
+```
+
+Sous Linux/macOS, utiliser `python3.11 -m venv .venv` puis `.venv/bin/python`.
+Le registre, les limites et les metriques sont consultables sans dataset ni token.
+Sans checkpoint, l'inference est indisponible : ce n'est pas une prediction simulee.
+
+### 2. Effectuer une inference reelle
+
+Il faut le checkpoint compatible du parcours et une image publique adaptee.
+**Les cinq poids ne sont pas dans Git et le depot Hugging Face est prive** :
+un clone seul ne donne pas acces aux modeles. Aucun token personnel n'est fourni.
+Les chemins attendus et les options de reproduction sont dans
+[le guide local](docs/LOCAL_SETUP.md#inference-avec-checkpoints).
+
+### Demo hebergee : disponibilite non verifiee
+
+[URL historique MultiCancer](https://rccia-multicancer.streamlit.app/).
+Le dernier controle applicatif documente, le **20 septembre 2026**, constatait
+un refus d'acces HF aux checkpoints. La finition du **29 septembre 2026** ne
+revalide pas ce service et ne modifie aucun secret distant. Les captures et les
+rapports restent consultables sans cette demo.
+[Suivi de deploiement](deploy/streamlit-multicancer/DEPLOYMENT_VALIDATION.md).
+
+## Tests et reproductibilite
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pytest -q -ra
+.\.venv\Scripts\python.exe -m pip check
+```
+
+Le [rapport de validation](docs/PORTFOLIO_VALIDATION.md) distingue l'etat local
+avec actifs et une copie des sources sans donnees ni checkpoints. Certaines QA
+reelles sont ignorees lorsque ces actifs manquent ; les smoke tests synthetiques
+ne sont pas des resultats ML reels. Pas de CI distante revendiquee.
+
+## Organisation
 
 ```text
-v2.2-error-analysis
+projects/
+  leukemia/       pipeline binaire et interpretabilite
+  lung_colon/     classification cinq classes et binaire
+  breast/         split patient-aware, grossissements et erreurs
+  metastasis/     PCam, ROC/PR et seuils
+  multicancer/    hub, schemas, adaptateurs et tests d'integration
+  rccia_common/   validation des images et des chemins de donnees
+deploy/          bootstrap et packaging, distincts des pipelines ML
+docs/            architecture, guides, limites et preuves datees
 ```
 
-## Structure
+Les sous-projets conservent leurs commandes de reproduction, benchmarks et
+rapports historiques. Les datasets, outputs, checkpoints, secrets et `.venv`
+restent hors Git. Le tag historique `multicancer-v1` reste sur `a51772d` ; il ne
+contient pas les correctifs ulterieurs. Le depot ne definit pas encore de licence
+de reutilisation : ne pas supposer une autorisation de redistribution.
 
-```text
-R.C.C.I.A/
-|-- README.md
-|-- requirements.txt
-|-- requirements-dev.txt
-|-- pyproject.toml
-|-- docs/
-|   |-- ROADMAP.md
-|   |-- PORTFOLIO_OVERVIEW.md
-|   |-- MULTICANCER_SCOPE.md
-|   |-- MULTICANCER_ARCHITECTURE.md
-|   |-- MULTICANCER_PROJECT_MATRIX.md
-|   |-- MULTICANCER_DECISIONS.md
-|   `-- assets/
-`-- projects/
-    |-- leukemia/
-    |   |-- README.md
-    |   |-- app.py
-    |   |-- rccia_leukemia/
-    |   |-- scripts/
-    |   |-- tests/
-    |   |-- docs/
-    |   |-- data/
-    |   `-- outputs/
-    |-- lung_colon/
-    |   |-- README.md
-    |   |-- app.py
-    |   |-- rccia_lung_colon/
-    |   |-- scripts/
-    |   |-- tests/
-    |   |-- docs/
-    |   |-- data/
-    |   `-- outputs/
-    |-- breast/
-    |   |-- README.md
-    |   |-- app.py
-    |   |-- rccia_breast/
-    |   |-- scripts/
-    |   |-- tests/
-    |   |-- docs/
-    |   |-- data/
-    |   `-- outputs/
-    |-- metastasis/
-    |   |-- README.md
-    |   |-- app.py
-    |   |-- rccia_metastasis/
-    |   |-- scripts/
-    |   |-- tests/
-    |   |-- docs/
-    |   |-- data/
-    |   `-- outputs/
-    `-- multicancer/
-        |-- README.md
-        |-- app.py
-        |-- multicancer/
-        |-- tests/
-        `-- docs/
-```
+## Pour approfondir
 
-## Installation Globale
-
-Depuis la racine :
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install -r requirements-dev.txt
-```
-
-## Lancer Les Tests
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest -q
-```
-
-## Lancer Le Projet Leucemie
-
-```powershell
-cd projects\leukemia
-..\..\.venv\Scripts\streamlit.exe run app.py
-```
-
-## Lancer Le Projet Lung + Colon
-
-```powershell
-cd projects\lung_colon
-..\..\.venv\Scripts\streamlit.exe run app.py
-```
-
-V1 reelle : baseline ResNet18 pre-entrainee sur LC25000, 25 000 images, 5 classes, accuracy test **0.9965**.
-
-V2 : benchmark comparatif ResNet18 / MobileNetV3 small / EfficientNet-B0. Meilleur score observe : EfficientNet-B0 avec **0.9992** accuracy test.
-
-V2.1 : analyse des erreurs sur EfficientNet-B0, **3 erreurs sur 3 750 images test**, toutes entre `lung_adenocarcinoma` et `lung_squamous_cell_carcinoma`.
-
-V2.2 : mode binaire `benign` vs `malignant` avec ResNet18 pre-entraine, accuracy test **1.0000** et recall `malignant` **1.0000** sur le split local binaire. Ces resultats sont a interpreter prudemment car LC25000 est un benchmark public relativement facile. Voir [projects/lung_colon/README.md](projects/lung_colon/README.md) pour le protocole et les limites.
-
-Pack portfolio Lung + Colon :
-
-- [Project summary](projects/lung_colon/docs/PROJECT_SUMMARY.md)
-- [Interview pitch](projects/lung_colon/docs/INTERVIEW_PITCH.md)
-- [LinkedIn draft](projects/lung_colon/docs/LINKEDIN_DRAFT.md)
-- [Release notes V2.2](projects/lung_colon/docs/RELEASE_NOTES_V2_2.md)
-
-Les donnees, checkpoints, outputs, tokens Kaggle et environnements virtuels ne sont pas versionnes.
-
-## Lancer Le Projet Breast
-
-```powershell
-cd projects\breast
-..\..\.venv\Scripts\streamlit.exe run app.py
-```
-
-V1 reelle : dataset BreakHis Kaggle, 7 909 images, 81 patients detectes, split patient-aware sans overlap patient, baseline ResNet18 pre-entrainee, accuracy test **0.8947**. Le recall `malignant` est **0.9466** sur le split local patient-aware.
-
-V2 : benchmark patient-aware ResNet18 / MobileNetV3 small / EfficientNet-B0. Meilleur score observe : EfficientNet-B0 avec **0.9122** accuracy test et **0.9004** macro F1. MobileNetV3 obtient le meilleur recall `malignant` (**0.9979**) et le temps d'entrainement le plus court, mais avec un F1 `benign` plus faible. Ces resultats restent experimentaux et ne constituent pas une validation clinique.
-
-V2.1 : analyse des erreurs sur EfficientNet-B0, **130 erreurs sur 1 481 images test**, avec **88 false positives** (`benign -> malignant`) et **42 false negatives** (`malignant -> benign`). L'analyse inclut les erreurs par grossissement, les patients concentrant le plus d'erreurs et des exemples Grad-CAM locaux non versionnes.
-
-Pack portfolio Breast :
-
-- [Project summary](projects/breast/docs/PROJECT_SUMMARY.md)
-- [Interview pitch](projects/breast/docs/INTERVIEW_PITCH.md)
-- [LinkedIn draft](projects/breast/docs/LINKEDIN_DRAFT.md)
-- [Release notes V2.1](projects/breast/docs/RELEASE_NOTES_V2_1.md)
-
-## Lancer Le Projet Metastasis
-
-```powershell
-cd projects\metastasis
-..\..\.venv\Scripts\streamlit.exe run app.py
-```
-
-V1 reelle : dataset Kaggle `tyson04/pcam-validate`, subset PCam HDF5 equilibre de 5 000 patches converti en ImageFolder, baseline ResNet18 pre-entrainee, accuracy test **0.9040**, ROC-AUC **0.9598**, PR-AUC **0.9616**. Ces resultats restent experimentaux sur subset public, sans validation clinique.
-
-V2 : benchmark ResNet18 / MobileNetV3 small / EfficientNet-B0 sur le meme subset PCam 96x96. Meilleur score observe : EfficientNet-B0 avec **0.9320** accuracy test, **0.9320** macro F1, **0.9762** ROC-AUC et **0.9780** PR-AUC. ResNet18 obtient le meilleur recall `metastatic` (**0.9307**) et MobileNetV3 small est le plus rapide a entrainer. Voir [projects/metastasis/docs/V2_MODEL_COMPARISON.md](projects/metastasis/docs/V2_MODEL_COMPARISON.md).
-
-V2.1 : analyse d'erreurs et de seuils sur EfficientNet-B0. Au seuil 0.50 : **699 correctes / 750**, **24 false positives**, **27 false negatives**, ROC-AUC **0.9762**, PR-AUC **0.9780**. L'analyse montre le compromis seuil bas / meilleur recall `metastatic` versus seuil haut / moins de faux positifs. Voir [projects/metastasis/docs/V2_ERROR_ANALYSIS.md](projects/metastasis/docs/V2_ERROR_ANALYSIS.md).
-
-Pack portfolio Metastasis :
-
-- [Project summary](projects/metastasis/docs/PROJECT_SUMMARY.md)
-- [Interview pitch](projects/metastasis/docs/INTERVIEW_PITCH.md)
-- [LinkedIn draft](projects/metastasis/docs/LINKEDIN_DRAFT.md)
-- [Release notes V2.1](projects/metastasis/docs/RELEASE_NOTES_V2_1.md)
-
-## Lancer Le Hub MultiCancer V1
-
-Demo publique validee : https://rccia-multicancer.streamlit.app/
-
-```powershell
-.\.venv\Scripts\streamlit.exe run projects\multicancer\app.py
-```
-
-MultiCancer est le hub final du monorepo. Sa V1 integre Leukemia, Breast, Metastasis et
-LungColon avec cinq parcours reels, chargement paresseux, predictions normalisees et
-Grad-CAM. LungColon impose un choix explicite entre son checkpoint cinq classes et son
-checkpoint binaire ; les deux modeles ne sont jamais charges simultanement.
-
-Le hub route explicitement vers des pipelines specialises et ne construit pas de modele
-medical universel.
-
-Statut : **MultiCancer V1 complete / portfolio-ready**. Tag de reference :
-`multicancer-v1`.
-
-Pack portfolio MultiCancer :
-
-- [Project summary](projects/multicancer/docs/PROJECT_SUMMARY.md)
-- [Interview pitch](projects/multicancer/docs/INTERVIEW_PITCH.md)
-- [LinkedIn drafts](projects/multicancer/docs/LINKEDIN_DRAFT.md)
-- [Release notes V1](projects/multicancer/docs/RELEASE_NOTES_V1.md)
-
-## Docs Globales
-
-- [Roadmap](docs/ROADMAP.md)
-- [Portfolio overview](docs/PORTFOLIO_OVERVIEW.md)
-- [MultiCancer scope](docs/MULTICANCER_SCOPE.md)
-- [MultiCancer architecture](docs/MULTICANCER_ARCHITECTURE.md)
-- [MultiCancer project matrix](docs/MULTICANCER_PROJECT_MATRIX.md)
-- [MultiCancer technical decisions](docs/MULTICANCER_DECISIONS.md)
-- [MultiCancer V1 roadmap](projects/multicancer/docs/ROADMAP_V1.md)
-- [MultiCancer V1.1 Leukemia adapter](projects/multicancer/docs/V1_LEUKEMIA_ADAPTER.md)
-- [MultiCancer V1.2 Breast adapter](projects/multicancer/docs/V1_BREAST_ADAPTER.md)
-- [MultiCancer V1.3 Metastasis adapter](projects/multicancer/docs/V1_METASTASIS_ADAPTER.md)
-- [MultiCancer V1.4 LungColon adapter](projects/multicancer/docs/V1_LUNG_COLON_ADAPTER.md)
-- [MultiCancer project summary](projects/multicancer/docs/PROJECT_SUMMARY.md)
-- [MultiCancer interview pitch](projects/multicancer/docs/INTERVIEW_PITCH.md)
-- [MultiCancer LinkedIn drafts](projects/multicancer/docs/LINKEDIN_DRAFT.md)
-- [MultiCancer release notes V1](projects/multicancer/docs/RELEASE_NOTES_V1.md)
-- [Leukemia project summary](projects/leukemia/docs/PROJECT_SUMMARY.md)
-- [Leukemia interview pitch](projects/leukemia/docs/INTERVIEW_PITCH.md)
-- [Leukemia LinkedIn draft](projects/leukemia/docs/LINKEDIN_DRAFT.md)
-- [Breast V2 model comparison](projects/breast/docs/V2_MODEL_COMPARISON.md)
-- [Breast V2 error analysis](projects/breast/docs/V2_ERROR_ANALYSIS.md)
-- [Metastasis dataset guide](projects/metastasis/docs/DATASET_GUIDE.md)
-- [Metastasis metrics guide](projects/metastasis/docs/METRICS_GUIDE.md)
-- [Metastasis project summary](projects/metastasis/docs/PROJECT_SUMMARY.md)
-- [Metastasis interview pitch](projects/metastasis/docs/INTERVIEW_PITCH.md)
-- [Metastasis LinkedIn draft](projects/metastasis/docs/LINKEDIN_DRAFT.md)
-- [Metastasis V2 model comparison](projects/metastasis/docs/V2_MODEL_COMPARISON.md)
-- [Metastasis V2 error analysis](projects/metastasis/docs/V2_ERROR_ANALYSIS.md)
+- [README MultiCancer et captures](projects/multicancer/README.md)
+- [Contrats et cycle de vie des modeles](docs/MULTICANCER_ARCHITECTURE.md)
+- [Matrice des projets](docs/MULTICANCER_PROJECT_MATRIX.md)
+- [Confidentialite et usage des images publiques](docs/PRIVACY.md)
+- [Audit technique du 20 septembre, historique](docs/AUDIT_2026-09-20.md)
+- [Roadmap et jalons historiques](docs/ROADMAP.md)

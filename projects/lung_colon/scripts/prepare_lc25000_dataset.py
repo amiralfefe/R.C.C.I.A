@@ -3,8 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import sys
 import shutil
 from pathlib import Path
+
+PROJECTS_DIR = Path(__file__).resolve().parents[2]
+if str(PROJECTS_DIR) not in sys.path:
+    sys.path.insert(0, str(PROJECTS_DIR))
+from rccia_common.dataset_paths import validate_dataset_paths
 
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
@@ -80,16 +86,22 @@ def copy_images(images: list[Path], destination_dir: Path, max_per_class: int | 
 
 def main() -> None:
     args = parse_args()
+    validate_dataset_paths(args.source, args.output)
+    if args.max_per_class is not None and args.max_per_class <= 0:
+        raise ValueError("--max-per-class must be positive.")
     if not args.source.exists():
         raise FileNotFoundError(f"Source folder not found: {args.source}")
 
-    prepare_output(args.output, overwrite=args.overwrite)
-
+    prepared = {}
     for target_class, candidates in CLASS_MAPPING.items():
         class_dir = find_class_dir(args.source, candidates)
         images = collect_images(class_dir)
         if not images:
             raise ValueError(f"No supported images found in {class_dir}.")
+        prepared[target_class] = (class_dir, images)
+
+    prepare_output(args.output, overwrite=args.overwrite)
+    for target_class, (class_dir, images) in prepared.items():
         count = copy_images(
             images=images,
             destination_dir=args.output / target_class,

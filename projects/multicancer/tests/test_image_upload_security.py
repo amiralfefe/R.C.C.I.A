@@ -105,7 +105,8 @@ def test_multiframe_image_is_rejected() -> None:
 
 
 def test_detected_format_wins_over_filename_or_mime_claims() -> None:
-    with pytest.raises(ImageUploadError, match="Format image non supporte"):
+    # Rejected before entering an unapproved parser, even if the extension claims PNG.
+    with pytest.raises(ImageUploadError, match="image valide et supportee"):
         decode_uploaded_image(image_bytes("BMP"), allowed_formats=HUB_IMAGE_FORMATS)
 
 

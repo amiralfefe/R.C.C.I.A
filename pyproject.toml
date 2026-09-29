@@ -15,6 +15,10 @@ testpaths = [
     "projects/breast/tests",
     "projects/metastasis/tests",
     "projects/multicancer/tests",
+    "projects/rccia_common/tests",
+    "deploy/hf-multicancer/tests",
+    "deploy/streamlit-multicancer/tests",
+    "deploy/streamlit-leukemia/tests",
 ]
 pythonpath = [
     "projects",

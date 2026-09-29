@@ -11,7 +11,7 @@ datasets, leurs classes ou leurs modeles.
 
 **MultiCancer V1 complete / portfolio-ready.**
 
-**Demo publique :** https://rccia-multicancer.streamlit.app/
+**URL historique, disponibilite non verifiee :** https://rccia-multicancer.streamlit.app/
 
 | Version | Livrable | Statut |
 | --- | --- | --- |
@@ -154,8 +154,12 @@ Metastasis et le retour vers Leukemia sans modele residuel.
 
 Le scenario Streamlit AppTest complet termine sans exception. Les tests couvrent aussi
 les checkpoints absents, images invalides, projets/modes/seuils invalides et Grad-CAM
-indisponible. La suite finale locale compte **120 tests passes**, dont six QA AppTest
-optionnels qui sont ignores proprement lorsque les actifs locaux sont absents.
+indisponible. La release historique `multicancer-v1` a ete validee avec **120 tests**,
+dont six QA AppTest optionnels. L'audit du **20 septembre 2026** documente ensuite
+**201 tests passes** sur ses correctifs locaux, avec une collecte elargie.
+Ces nombres ne sont pas une validation du deploiement public. La nouvelle
+[validation portfolio datee](../../docs/PORTFOLIO_VALIDATION.md) indique l'etat
+teste, les resultats et les skips quand les actifs locaux sont absents.
 
 Depuis la racine :
 
@@ -170,7 +174,8 @@ Depuis la racine :
 ```
 
 Le hub reste consultable sans checkpoint. Une prediction necessite le checkpoint local
-du parcours selectionne.
+du parcours selectionne. Les poids HF sont prives : un clone ne les fournit pas.
+Voir [installation et actifs requis](../../docs/LOCAL_SETUP.md).
 
 ## Public Deployment
 
@@ -179,8 +184,10 @@ payant pour ce type de Space. Le repository prive Hugging Face contenant les cin
 checkpoints est conserve.
 
 Le packaging [Streamlit Community Cloud](../../deploy/streamlit-multicancer/README.md)
-est deploye et valide publiquement a l'adresse
-https://rccia-multicancer.streamlit.app/. Il reutilise le downloader existant, ne stocke
+possede l'URL historique https://rccia-multicancer.streamlit.app/.
+**Disponibilite actuelle non verifiee** : le dernier controle applicatif du
+20 septembre 2026 signalait un acces HF refuse. La finition du 29 septembre ne
+modifie aucun service distant. Le packaging reutilise le downloader existant, ne stocke
 aucun checkpoint dans GitHub et conserve le lazy loading. Les cinq checkpoints restent
 dans le repository prive Hugging Face et sont recuperes au demarrage du service.
 

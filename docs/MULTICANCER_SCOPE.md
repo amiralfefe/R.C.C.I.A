@@ -1,5 +1,9 @@
 # MultiCancer Scope
 
+Document de cadrage historique V0. Pour les composants livres et leur statut,
+voir [l'architecture actuelle](MULTICANCER_ARCHITECTURE.md) et la
+[validation locale datee](PORTFOLIO_VALIDATION.md).
+
 ## Vision
 
 MultiCancer est le hub final du monorepo R.C.C.I.A. Il rassemble quatre pipelines

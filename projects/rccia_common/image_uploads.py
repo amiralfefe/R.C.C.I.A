@@ -129,7 +129,7 @@ def decode_uploaded_image(
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error", Image.DecompressionBombWarning)
-            with Image.open(io.BytesIO(content)) as candidate:
+            with Image.open(io.BytesIO(content), formats=sorted(normalized_formats)) as candidate:
                 _validate_header(
                     candidate,
                     allowed_formats=normalized_formats,
@@ -141,7 +141,7 @@ def decode_uploaded_image(
                 )
                 candidate.verify()
 
-            with Image.open(io.BytesIO(content)) as candidate:
+            with Image.open(io.BytesIO(content), formats=sorted(normalized_formats)) as candidate:
                 _validate_header(
                     candidate,
                     allowed_formats=normalized_formats,

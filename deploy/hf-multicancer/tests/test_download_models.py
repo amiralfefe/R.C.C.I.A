@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 from pathlib import Path
 
 import pytest
@@ -13,6 +15,43 @@ assert SPEC is not None and SPEC.loader is not None
 download_module = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = download_module
 SPEC.loader.exec_module(download_module)
+
+
+def test_concurrent_installs_have_independent_staging_files(tmp_path, monkeypatch):
+    cache = tmp_path / "cache.pt"
+    cache.write_bytes(b"complete checkpoint")
+    barrier = Barrier(2)
+    original_copy = download_module.shutil.copyfile
+    staged_paths = []
+
+    def synchronized_copy(source, destination):
+        staged_paths.append(destination)
+        original_copy(source, destination)
+        barrier.wait(timeout=10)
+
+    monkeypatch.setattr(download_module.shutil, "copyfile", synchronized_copy)
+    def install():
+        return download_module.download_models(
+            repo_root=tmp_path / "repo", repo_id="owner/models",
+            token="test-only", downloader=lambda *_: cache,
+            model_files=download_module.MODEL_FILES[:1],
+        )
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(lambda _: install(), range(2)))
+    assert len(set(staged_paths)) == 2
+    assert results[0][0].destination.read_bytes() == cache.read_bytes()
+    assert not list((tmp_path / "repo").rglob("*.part"))
+
+
+def test_empty_download_is_rejected(tmp_path):
+    cache = tmp_path / "empty.pt"
+    cache.touch()
+    with pytest.raises(download_module.ModelDownloadError, match="unavailable"):
+        download_module.download_models(
+            repo_root=tmp_path / "repo", repo_id="owner/models", token="test-only",
+            downloader=lambda *_: cache, model_files=download_module.MODEL_FILES[:1],
+        )
+    assert not (tmp_path / "repo").exists()
 
 
 def test_checkpoint_mapping_matches_frozen_adapter_paths() -> None:

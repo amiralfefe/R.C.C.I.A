@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import argparse
+import sys
 import csv
 import re
 import shutil
 from collections import Counter
 from pathlib import Path
+
+PROJECTS_DIR = Path(__file__).resolve().parents[2]
+if str(PROJECTS_DIR) not in sys.path:
+    sys.path.insert(0, str(PROJECTS_DIR))
+from rccia_common.dataset_paths import validate_dataset_paths
 
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
@@ -129,10 +135,11 @@ def write_metadata(rows: list[dict[str, str]], output_path: Path) -> None:
 
 def main() -> None:
     args = parse_args()
+    validate_dataset_paths(args.source, args.output)
+    if args.max_per_class is not None and args.max_per_class <= 0:
+        raise ValueError("--max-per-class must be positive.")
     if not args.source.exists():
         raise FileNotFoundError(f"Input folder not found: {args.source}")
-
-    prepare_output(args.output, overwrite=args.overwrite)
 
     images = collect_images(args.source)
     if not images:
@@ -147,6 +154,9 @@ def main() -> None:
             continue
         selected_by_class[class_name].append(image_path)
 
+    if any(not images for images in selected_by_class.values()):
+        raise ValueError("Both benign and malignant classes must contain images.")
+    prepare_output(args.output, overwrite=args.overwrite)
     rows: list[dict[str, str]] = []
     magnifications: Counter[str] = Counter()
     patient_ids: set[str] = set()

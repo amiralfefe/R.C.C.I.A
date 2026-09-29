@@ -385,6 +385,11 @@ Depuis la racine du repo :
 
 - Demonstrateur educatif, pas outil medical.
 - Dataset public, sans validation clinique independante.
+- LC25000 contient des variantes augmentees d'images sources. Le split actuel est
+  effectue par image, sans regroupement garanti par image d'origine ou patient :
+  des variantes apparentees peuvent donc traverser les splits et surestimer la
+  generalisation. Les 99.92 % / 100 % ne constituent pas une validation sur
+  patients independants. Voir la [publication du dataset](https://arxiv.org/abs/1912.12142).
 - Les scores sont obtenus sur LC25000 avec un split local reproductible, pas sur une cohorte clinique externe.
 - Les performances tres elevees doivent etre interpretees comme un resultat experimental portfolio, pas comme une preuve de robustesse medicale.
 - Scores futurs dependront du split, du preprocessing, du modele et du protocole d'entrainement.

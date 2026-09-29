@@ -1,144 +1,74 @@
-# MultiCancer Architecture
+# MultiCancer - architecture livree
 
-## Principe
+Etat documentaire : 29 septembre 2026. Cette page remplace la description cible
+V0 ; le [scope initial](MULTICANCER_SCOPE.md) reste un document historique.
+Le hub integre quatre pipelines et cinq parcours, sans detecter automatiquement
+la modalite ni construire de modele medical universel.
 
-MultiCancer adopte une architecture modulaire avec un adaptateur par projet specialise.
-Le hub fournit l'interface commune ; chaque adaptateur reste responsable du contrat reel
-de son pipeline.
-
-La V0 ne contient aucun adaptateur fonctionnel. Elle definit uniquement les frontieres
-qui seront implementees en V1.
-
-## Composants Prevus
-
-- **MultiCancer Streamlit Hub** : navigation, rendu commun et avertissements ;
-- **Project Registry** : metadonnees stables des quatre projets ;
-- **Specialized Adapters** : ponts vers les packages existants ;
-- **Common Prediction Schema** : resultat normalise d'une inference ;
-- **Common Metrics Schema** : presentation commune sans effacer le protocole source ;
-- **Common Explainability Schema** : statut et artefact Grad-CAM optionnel ;
-- **Disclaimer / Limitations Layer** : avertissement global et limites par projet.
-
-## Architecture Cible
+## Flux d'une session
 
 ```text
-projects/multicancer/
-|-- README.md
-|-- app.py
-|-- multicancer/
-|   |-- __init__.py
-|   |-- registry.py
-|   |-- schemas.py
-|   |-- router.py
-|   |-- adapters/
-|   |   |-- __init__.py
-|   |   |-- leukemia_adapter.py
-|   |   |-- lung_colon_adapter.py
-|   |   |-- breast_adapter.py
-|   |   `-- metastasis_adapter.py
-|   `-- ui/
-|       |-- __init__.py
-|       |-- comparison.py
-|       `-- disclaimers.py
-|-- docs/
-|   `-- ROADMAP_V1.md
-`-- tests/
-    `-- test_multicancer_registry.py
+Choix explicite du projet (et du mode LungColon)
+  -> ModelManager : unload avant changement
+  -> BaseAdapter specialise : statut du checkpoint
+  -> upload PNG/JPEG : decodeur borne rccia_common
+  -> load a la demande + preprocessing du pipeline
+  -> PredictionResult : classe, probabilites, modele, limites
+  -> ExplanationResult : Grad-CAM optionnel
+  -> Metastasis : ThresholdDecision derivee sans nouvelle inference
 ```
 
-`router.py`, `adapters/` et `ui/` sont des cibles V1, pas des livrables V0.
+## Composants reels
 
-## Project Registry
+| Composant | Role |
+| --- | --- |
+| `projects/multicancer/app.py` | Interface, session, affichage des resultats et erreurs |
+| `multicancer/registry.py` | Metadonnees, resultats historiques et limites des projets |
+| `multicancer/schemas.py` | Dataclasses des metadonnees, checkpoints, predictions, explications et seuils |
+| `multicancer/model_manager.py` | Selection explicite et cycle de vie d'un adaptateur par session |
+| `multicancer/adapters/base.py` | Contrat commun : metadata, checkpoint_status, load, predict, explain, unload |
+| `multicancer/adapters/*_adapter.py` | Quatre adaptateurs deleguant aux pipelines specialises |
+| `multicancer/thresholds.py` | Decision exploratoire separee de l'argmax original |
+| `projects/rccia_common/` | Validation des uploads et des chemins de preparation |
+| `deploy/streamlit-multicancer/app.py` | Bootstrap optionnel des poids avant lancement du hub |
 
-Le registre V0 expose les metadonnees suivantes :
+Les chemins `multicancer/...` sont relatifs a `projects/multicancer/`.
+Il n'existe pas de service REST ou de base de donnees. `router.py` et un package
+`ui/` figuraient dans la cible V0 : ce ne sont pas des composants livres ni des
+prerequis a ajouter. Le routage est assure par le ModelManager et l'interface.
 
-- `project_id` ;
-- `display_name` ;
-- `modality` ;
-- `task` ;
-- `classes` ;
-- `image_size` ou description de resolution ;
-- `status` ;
-- `supports_gradcam` ;
-- `primary_metrics` ;
-- `dataset` ;
-- `methodological_note`.
+## Poids et contrats
 
-En V1, une indication relative et optionnelle de checkpoint pourra etre ajoutee. Son
-existence ne sera jamais supposee au chargement du registre.
+Chaque pipeline utilise un checkpoint contenant l'etat du modele, les classes,
+la resolution et le nom d'architecture. L'adaptateur conserve le preprocessing
+du pipeline source ; le hub normalise la presentation, pas les datasets.
+Voir les [chemins de checkpoints](LOCAL_SETUP.md#inference-avec-checkpoints).
 
-## Common Prediction Schema
+LungColon impose un mode `multiclass` (EfficientNet-B0) ou `binary` (ResNet18).
+Changer ce mode libere le modele actif. Metastasis conserve une PredictionResult
+independante du seuil : modifier le slider ne remplace pas son argmax et ne
+relance pas l'inference.
 
-Le schema conceptuel `PredictionResult` contient :
+## Memoire et erreurs
 
-- `project_id` ;
-- `predicted_class` ;
-- `confidence` ;
-- `class_probabilities` ;
-- `model_name` ;
-- `image_size` ;
-- `explanation_path`, optionnel ;
-- `warnings` ;
-- `disclaimer`.
+- Un modele au plus par session, **pas un quota global pour tous les utilisateurs**.
+- Chargement paresseux ; metadonnees et interface disponibles sans poids.
+- Nouvelle image ou nouvelle analyse : ancien resultat et Grad-CAM invalides.
+- Grad-CAM reussi mis en cache pour la prediction courante, pas recalcule par le slider.
+- Checkpoint manquant/incompatible, image invalide et explication indisponible
+  produisent des messages controles.
+- Les uploads du hub ne sont pas enregistres dans les datasets ou reutilises pour
+  entrainement ; voir la [notice de confidentialite](PRIVACY.md).
 
-Une dataclass standard suffit en V0. Aucun framework de validation supplementaire n'est
-necessaire.
+## Frontiere de deploiement
 
-## Common Metrics Schema
+Le lancement direct du hub ne telecharge rien. Le bootstrap Cloud telecharge les
+cinq poids vers des chemins fixes depuis un depot HF prive, avec un token de
+lecture cote serveur. Il ne charge pas les modeles en RAM. L'installation locale
+utilise des temporaires distincts et un verrou de remplacement par processus.
+Ces corrections ne sont effectives a distance qu'apres publication autorisee.
 
-Le hub pourra normaliser le format d'affichage, mais chaque valeur devra conserver son
-contexte : dataset, split, architecture, taille d'image, nombre d'epochs et nature du
-protocole. Les metriques specifiques, comme ROC-AUC, PR-AUC ou analyse par
-grossissement, restent attachees au projet source.
-
-## Router
-
-Le routage V1 sera explicite :
-
-1. l'utilisateur choisit le projet ou la tache ;
-2. le hub selectionne l'adaptateur correspondant ;
-3. l'adaptateur valide l'image et la disponibilite du checkpoint ;
-4. le pipeline specialise produit un `PredictionResult` ;
-5. le hub affiche le resultat avec les limites du projet.
-
-La V1 n'effectuera pas de detection automatique opaque de la modalite.
-
-## Adapters
-
-Chaque adaptateur encapsulera :
-
-- chargement du modele et de son checkpoint ;
-- preprocessing exact du projet ;
-- prediction et probabilites ;
-- Grad-CAM si disponible ;
-- metadonnees et metriques documentees ;
-- limites et avertissements.
-
-Les quatre pipelines stockent deja dans leurs checkpoints `model_state`, `class_names`,
-`image_size` et `model_name`. Ce socle commun facilitera les adaptateurs, mais ceux-ci
-resteront independants afin de respecter les packages et comportements existants.
-
-## Gestion Des Checkpoints
-
-Les checkpoints restent locaux, facultatifs et exclus de Git. Le registre peut etre
-charge sans checkpoint. En V1, le hub chargera au plus un modele a la fois et affichera
-un message clair lorsque l'artefact attendu est absent.
-
-## Gestion Des Erreurs
-
-Les erreurs suivantes devront etre gerees sans crash global :
-
-- checkpoint absent ou incompatible ;
-- image invalide ;
-- format non supporte ;
-- Grad-CAM indisponible ;
-- projet ou adaptateur indisponible.
-
-## Securite Et Cadrage
-
-- aucun stockage patient ;
-- aucune donnee personnelle ;
-- aucun diagnostic ou conseil medical ;
-- avertissement global toujours visible ;
-- limites propres au projet affichees avec chaque resultat ;
-- aucune comparaison de score sans rappel du protocole.
+Le Dockerfile HF historique clone le tag `multicancer-v1`, donc pas les correctifs
+posterieurs. Il n'est pas le chemin recommande pour essayer la version locale.
+La [validation locale](PORTFOLIO_VALIDATION.md) ne certifie ni le service Cloud,
+ni une charge multiutilisateur, ni une aptitude clinique.

@@ -1,0 +1,6 @@
+[server]
+# Match the bounded image decoder; keep CORS and XSRF defaults enabled.
+maxUploadSize = 8
+
+[browser]
+gatherUsageStats = false

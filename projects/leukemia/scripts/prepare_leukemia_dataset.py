@@ -11,10 +11,16 @@ It never modifies the original downloaded files.
 from __future__ import annotations
 
 import argparse
+import sys
 import random
 import shutil
 from collections import Counter
 from pathlib import Path
+
+PROJECTS_DIR = Path(__file__).resolve().parents[2]
+if str(PROJECTS_DIR) not in sys.path:
+    sys.path.insert(0, str(PROJECTS_DIR))
+from rccia_common.dataset_paths import validate_dataset_paths
 
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
@@ -145,6 +151,7 @@ def main() -> None:
     args = parse_args()
     source_dir = args.source.resolve()
     output_dir = args.output.resolve()
+    validate_dataset_paths(source_dir, output_dir)
 
     if not source_dir.exists() or not source_dir.is_dir():
         raise FileNotFoundError(f"Source dataset folder not found: {source_dir}")
@@ -155,6 +162,8 @@ def main() -> None:
 
     normal_dirs = build_class_sources(source_dir, args.normal_dir, NORMAL_NAMES, "normal")
     blast_dirs = build_class_sources(source_dir, args.blast_dir, BLAST_NAMES, "blast")
+    for class_source in normal_dirs + blast_dirs:
+        validate_dataset_paths(class_source, output_dir)
 
     overlap = set(normal_dirs).intersection(blast_dirs)
     if overlap:

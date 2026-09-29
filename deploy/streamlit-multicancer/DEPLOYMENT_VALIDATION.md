@@ -1,5 +1,15 @@
 # Streamlit MultiCancer Deployment Validation
 
+## Current interpretation (2026-09-29)
+
+The results below are historical, not a current availability guarantee.
+The local audit on 2026-09-20 observed a Hugging Face checkpoint access denial.
+Public availability has not been revalidated during portfolio finishing; no
+remote setting or token was changed. See the [local validation report](../../docs/PORTFOLIO_VALIDATION.md).
+Local fixes are not deployed until explicitly published to the configured branch.
+
+## Historical validation
+
 Validation date: 2026-08-07
 
 Public URL: https://rccia-multicancer.streamlit.app/

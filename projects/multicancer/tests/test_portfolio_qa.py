@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from PIL import Image
@@ -131,8 +132,44 @@ def test_metastasis_slider_reuses_prediction_and_loaded_model() -> None:
     prediction = app.session_state["multicancer_last_prediction"]
     adapter = app.session_state["multicancer_model_manager"].current_adapter
     model_id = id(adapter._model)
-    app.slider[0].set_value(0.70).run(timeout=30)
+    with patch.object(adapter, "explain", wraps=adapter.explain) as explain:
+        app.toggle[0].set_value(True).run(timeout=90)
+        app.slider[0].set_value(0.70).run(timeout=30)
+        assert explain.call_count == 1
 
     assert not app.exception
     assert app.session_state["multicancer_last_prediction"] is prediction
     assert id(app.session_state["multicancer_model_manager"].current_adapter._model) == model_id
+
+
+def test_changed_upload_clears_prediction_and_gradcam() -> None:
+    _, _, checkpoint, image_path = LOCAL_CASES[2]
+    _require_local_assets(checkpoint, image_path)
+    app = AppTest.from_file(str(APP_PATH)).run(timeout=30)
+    app.selectbox[0].select("metastasis").run()
+    uploader = app.get("file_uploader")[0]
+    uploader.upload("first.png", image_path.read_bytes(), "image/png").run()
+    app.button(key="analyze_metastasis_single").click().run(timeout=90)
+    app.toggle[0].set_value(True).run(timeout=90)
+    assert "multicancer_last_explanation" in app.session_state
+    app.get("file_uploader")[0].upload("second.png", image_path.read_bytes(), "image/png").run()
+    assert not app.exception
+    for key in ("multicancer_last_prediction", "multicancer_last_image", "multicancer_last_explanation"):
+        assert key not in app.session_state
+
+
+def test_failed_prediction_does_not_display_previous_result() -> None:
+    from multicancer.exceptions import AdapterError
+
+    _, _, checkpoint, image_path = LOCAL_CASES[2]
+    _require_local_assets(checkpoint, image_path)
+    app = AppTest.from_file(str(APP_PATH)).run(timeout=30)
+    app.selectbox[0].select("metastasis").run()
+    app.get("file_uploader")[0].upload("sample.png", image_path.read_bytes(), "image/png").run()
+    app.button(key="analyze_metastasis_single").click().run(timeout=90)
+    adapter = app.session_state["multicancer_model_manager"].current_adapter
+    with patch.object(adapter, "predict", side_effect=AdapterError("Controlled test failure")):
+        app.button(key="analyze_metastasis_single").click().run()
+    assert not app.exception
+    assert "multicancer_last_prediction" not in app.session_state
+    assert any("Controlled test failure" in error.value for error in app.error)

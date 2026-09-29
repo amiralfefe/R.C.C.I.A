@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import argparse
+import sys
 import csv
 import re
 import shutil
 from collections import Counter
 from pathlib import Path
+
+PROJECTS_DIR = Path(__file__).resolve().parents[2]
+if str(PROJECTS_DIR) not in sys.path:
+    sys.path.insert(0, str(PROJECTS_DIR))
+from rccia_common.dataset_paths import validate_dataset_paths
 
 import numpy as np
 from PIL import Image
@@ -265,11 +271,27 @@ def prepare_image_folder_dataset(source: Path, output_dir: Path, max_per_class: 
 
 def main() -> None:
     args = parse_args()
-    prepare_output(args.output, overwrite=args.overwrite)
+    if args.max_per_class is not None and args.max_per_class <= 0:
+        raise ValueError("--max-per-class must be positive.")
 
     if args.x_h5 is not None or args.y_h5 is not None:
         if args.x_h5 is None or args.y_h5 is None:
             raise ValueError("HDF5 conversion requires both --x-h5 and --y-h5.")
+        for source in (args.x_h5, args.y_h5):
+            validate_dataset_paths(source, args.output)
+            if source.suffix.lower() == ".gz":
+                raise ValueError("Decompress .h5.gz files before conversion.")
+        import h5py
+
+        with h5py.File(args.x_h5, "r") as x_file, h5py.File(args.y_h5, "r") as y_file:
+            images, labels = x_file[args.hdf5_key_x], y_file[args.hdf5_key_y]
+            if len(images) == 0 or len(images) != len(labels):
+                raise ValueError("HDF5 image/label count mismatch or empty dataset.")
+            if len(images.shape) != 4 or images.shape[-1] not in {1, 3, 4}:
+                raise ValueError("Unsupported HDF5 image shape.")
+            if labels.size != len(images) or not np.isin(labels[:], [0, 1]).all():
+                raise ValueError("Expected one binary label per HDF5 image.")
+        prepare_output(args.output, overwrite=args.overwrite)
         prepare_hdf5_dataset(
             x_h5=args.x_h5,
             y_h5=args.y_h5,
@@ -283,6 +305,11 @@ def main() -> None:
 
     if args.source is None:
         raise ValueError("Image-folder preparation requires --input, or use --x-h5 and --y-h5.")
+    validate_dataset_paths(args.source, args.output)
+    detected = {detect_class(image, args.source) for image in collect_images(args.source)}
+    if not {"non_metastatic", "metastatic"}.issubset(detected):
+        raise ValueError("Both classes must contain supported, labeled images.")
+    prepare_output(args.output, overwrite=args.overwrite)
     prepare_image_folder_dataset(
         source=args.source,
         output_dir=args.output,
